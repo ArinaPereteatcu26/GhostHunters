@@ -1,3 +1,6 @@
 [submodule "Inventory-Service"]
 	path = Inventory-Service
 	url = https://github.com/dgliga238/Inventory-Service.git
+[submodule "Chat-Service"]
+	path = Chat-Service
+	url = https://github.com/dgliga238/Chat-Service.git
