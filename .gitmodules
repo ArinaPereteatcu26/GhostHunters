@@ -1,0 +1,3 @@
+[submodule "Inventory-Service"]
+	path = Inventory-Service
+	url = https://github.com/dgliga238/Inventory-Service.git
