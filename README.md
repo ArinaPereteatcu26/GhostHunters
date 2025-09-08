@@ -757,3 +757,367 @@ Services communicate via **RESTful APIs and asynchronous messaging**:
     "lobbyId": "lobby_45"
   }
 }
+
+
+---
+
+
+# Service Endpoints & Communication Contract
+
+Our platform defines a clear set of service endpoints that enable seamless communication between game systems, ensuring synchronized gameplay and consistent data flow.
+
+These endpoints specify the **paths, request formats, and response structures** used by each service, covering **REST, gRPC, and WebSocket interactions**.
+
+By standardizing inputs and outputs, we guarantee reliable integration across services while maintaining flexibility for future scaling and feature expansion.
+
+---
+
+## User Management Service
+Handles user profiles, authentication, and currency.  
+**Database:** PostgreSQL  
+
+### Endpoints
+
+#### POST /users/register
+
+**Request**
+```json
+{
+  "username": "string",
+  "email": "string",
+  "password": "string"
+}
+
+**Response**
+```json
+{
+  "userId": "uuid",
+  "createdAt": "timestamp"
+}
+
+#### POST /users/login
+
+**Request**
+```json
+{
+ "email": "string",
+  "password": "string"
+}
+
+**Response**
+```json
+{
+ "token": "jwt",
+  "expiresIn": 3600
+}
+
+#### GET /users/{id}/balance
+
+**Response**
+```json
+{
+ "userId": "uuid",
+  "currency": "int"
+}
+
+## Shop Service
+Handles purchases, pricing, and transactions.
+**Database:** PostgreSQL  
+
+### Endpoints
+
+#### POST /shop/purchase
+
+**Request**
+```json
+{
+  "userId": "uuid",
+  "itemId": "uuid"
+}
+
+**Response**
+```json
+{
+  "transactionId": "uuid",
+  "status": "success|failed",
+  "reason": "string|null"
+}
+
+#### GET /shop/items
+**Response**
+```json
+[
+  {
+    "itemId": "uuid",
+    "name": "string",
+    "price": "int"
+  }
+]
+
+## Inventory Service
+Tracks owned items and durability.
+**Database:** PostgreSQL  
+
+### Endpoints
+
+#### GET /inventory/{userId}
+**Response**
+```json
+[
+  {
+    "itemId": "uuid",
+    "name": "string",
+    "durability": "float"
+  }
+]
+
+#### POST /inventory/use
+**Request**
+```json
+{
+  "userId": "uuid",
+  "itemId": "uuid"
+}
+
+**Response**
+```json
+{
+  "status": "success|failed",
+  "updatedDurability": "float|null"
+}
+
+## Lobby Service
+Manages sessions, players, and game state.
+**Database**  Redis (real-time), PostgreSQL (persistent logs)
+
+### Endpoints
+
+#### POST /lobby/create
+
+**Request**
+```json
+{
+  "hostId": "uuid",
+  "mapId": "uuid"
+}
+
+**Response**
+```json
+{
+  "lobbyId": "uuid",
+  "status": "created"
+}
+
+#### POST /lobby/{lobbyId}/join
+
+**Request**
+```json
+{
+  "userId": "uuid"
+}
+
+**Response**
+```json
+{
+  "status": "joined",
+  "players": ["uuid", "uuid"]
+}
+
+## Location Service
+Tracks player movements.
+**Database**  Redis (real-time cache)
+
+### Endpoints
+
+#### POST /location/update
+**Request**
+```json
+{
+  "userId": "uuid",
+  "x": "float",
+  "y": "float",
+  "z": "float"
+}
+
+**Response**
+```json
+{
+   "status": "updated",
+  "timestamp": "timestamp"
+}
+
+## Ghost AI Service
+Handles ghost behavior logic.
+**Database**  Redis (real-time), PostgreSQL (logs)
+
+### gRPC Endpoints (Protobuf)
+
+#### POST /location/update
+
+**service GhostAI**
+{
+  rpc UpdateLocation (LocationUpdate) returns (Ack);
+  rpc GetGhostState (GhostRequest) returns (GhostState);
+}
+**message LocationUpdate**
+
+{
+  string userId = 1;
+  float x = 2;
+  float y = 3;
+  float z = 4;
+}
+
+**message GhostState**
+{
+  string ghostId = 1;
+  string behavior = 2;
+  float aggressionLevel = 3;
+}
+
+
+## Chat Service  
+
+Handles real-time communication with proximity rules.  
+**Transport:** WebSocket (Socket.IO)  
+
+### Events  
+
+**join_room**  
+```json
+  {
+    "lobbyId": "uuid",
+    "userId": "uuid"
+  }
+
+**send_message**  
+```json
+{
+  "from": "uuid",
+  "to": "uuid|null",
+  "message": "string"
+}
+
+**receive_message**  
+```json
+{
+  "from": "uuid",
+  "message": "string",
+  "timestamp": "timestamp"
+}
+
+## Journal Service
+Manages ghost identification and scoring.
+**Database**   MongoDB (ghost data), PostgreSQL (scores)
+
+### Endpoints
+
+#### POST /journal/submit
+**Request**
+```json
+{
+  "userId": "uuid",
+  "lobbyId": "uuid",
+  "ghostType": "string"
+}
+
+**Response**
+```json
+{
+  "status": "recorded",
+  "correct": "bool",
+  "reward": "int"
+}
+
+## Map Service
+Handles layout and environmental assets.
+**Database**   MongoDB
+
+### Endpoints
+
+#### GET /maps/{mapId}
+
+**Response**
+```json
+{
+  "mapId": "uuid",
+  "name": "string",
+  "layout": "json"
+}
+
+## Ghost Service
+Stores and provides detailed information about ghost types, symptoms, and behavioral rules.
+**Database**   MongoDB (ghost encyclopedia), PostgreSQL (symptom usage logs)
+
+### Endpoints
+
+#### GET /ghosts
+
+**Response**
+```json
+[
+  {
+    "ghostId": "uuid",
+    "name": "string",
+    "typeASymptoms": ["string", "string"],
+    "typeBSymptoms": ["string", "string"]
+  }
+]
+
+#### GET /ghosts/{ghostId}
+
+**Response**
+```json
+{
+  "ghostId": "uuid",
+  "name": "string",
+  "description": "string",
+  "typeASymptoms": ["string", "string"],
+  "typeBSymptoms": ["string", "string"]
+}
+
+#### POST /ghosts/validate
+
+**Request**
+```json
+{
+  "ghostId": "uuid",
+  "submittedSymptoms": ["string"]
+}
+
+**Response**
+```json
+{
+  "isMatch": "bool",
+  "confidence": "float"
+}
+
+
+## GitHub Workflow Setup  
+
+Our repository follows a structured GitHub workflow to ensure quality and collaboration.  
+
+### Branching Strategy  
+- **main**: Stable production-ready branch.  
+- **development**: Integration branch for features before release.  
+- **feature/***: Used for new features (e.g., `feature/chat-service`).  
+- **bugfix/***: Used for bug fixes.  
+- **hotfix/***: Used for urgent fixes in production.  
+
+### Merging Strategy  
+- We use **Squash and Merge** for a clean commit history.  
+- Only merge via PRs; direct pushes to `main` or `development` are not allowed.  
+
+### Pull Request Guidelines  
+- All changes must go through a PR before merging.  
+- Include a clear description of the changes and reference any related issues.  
+- Ensure all tests and status checks pass before merging.  
+
+### Test Coverage  
+- Automated tests run on each PR using GitHub Actions.  
+- A PR cannot be merged unless tests pass successfully.  
+
+### Versioning  
+- We follow **Semantic Versioning (SemVer)**: `MAJOR.MINOR.PATCH`.  
+- New releases are tagged in GitHub (e.g., `v1.0.0`).  
+
