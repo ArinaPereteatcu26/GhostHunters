@@ -820,3 +820,8 @@ WebSocket-based connections for \*\*instant feedback\*\*.
 
 \- Open-source stack → Enterprise-grade without licensing costs
 
+## Architecture Diagram
+
+![Architecture](./assets/ghosthunter_architecture.png)
+
+The Game Client communicates through a centralized API Gateway that manages interactions between three main service clusters. The User & Commerce domain forms a tightly integrated group where the User Management Service, Shop Service, and Inventory Service work together through their respective databases to handle player authentication, transactions, and asset management. The Content Management cluster operates somewhat independently, with the Map Service managing game world data and the Ghost Service handling gameplay recordings or AI opponents, both feeding into a shared Ghost DB. The Real-Time Systems domain handles live gameplay through the Location Service and Chat Service with their dedicated databases. The Lobby Service acts as a central coordination hub, interfacing with multiple services including the Ghost AI Service, which uniquely bridges different domains by connecting to both the Journal Service (for event logging) and various gameplay services. The Journal Service serves as a cross-cutting logging system that captures events from the game logic layer, creating an audit trail that spans multiple service boundaries. This architecture demonstrates loose coupling between service domains while maintaining necessary data consistency through dedicated databases and careful service-to-service communication patterns.
