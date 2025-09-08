@@ -4,3 +4,9 @@
 [submodule "Chat-Service"]
 	path = Chat-Service
 	url = https://github.com/dgliga238/Chat-Service.git
+[submodule "GhostService"]
+	path = GhostService
+	url = https://github.com/Katrincik/GhostHunters_GhostService.git
+[submodule "LocationService"]
+	path = LocationService
+	url = https://github.com/Katrincik/GhostHunters_LocationService.git
