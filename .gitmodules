@@ -16,3 +16,9 @@
 [submodule "User-Management-Service"]
 	path = User-Management-Service
 	url = https://github.com/ArinaPereteatcu26/UserManagementService.git
+[submodule "Shop-Service"]
+	path = Shop-Service
+	url = https://github.com/sweet293/PAD-shop-service.git
+[submodule "Journal-Service"]
+	path = Journal-Service
+	url = https://github.com/sweet293/PAD-journal-service.git
