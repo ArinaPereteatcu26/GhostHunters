@@ -757,8 +757,7 @@ Services communicate via **RESTful APIs and asynchronous messaging**:
     "lobbyId": "lobby_45"
   }
 }
-
-
+```
 ---
 
 
@@ -787,14 +786,14 @@ Handles user profiles, authentication, and currency.
   "email": "string",
   "password": "string"
 }
-
+```
 **Response**
 ```json
 {
   "userId": "uuid",
   "createdAt": "timestamp"
 }
-
+```
 #### POST /users/login
 
 **Request**
@@ -803,14 +802,14 @@ Handles user profiles, authentication, and currency.
  "email": "string",
   "password": "string"
 }
-
+```
 **Response**
 ```json
 {
  "token": "jwt",
   "expiresIn": 3600
 }
-
+```
 #### GET /users/{id}/balance
 
 **Response**
@@ -819,7 +818,7 @@ Handles user profiles, authentication, and currency.
  "userId": "uuid",
   "currency": "int"
 }
-
+```
 ## Shop Service
 Handles purchases, pricing, and transactions.
 **Database:** PostgreSQL  
@@ -834,7 +833,7 @@ Handles purchases, pricing, and transactions.
   "userId": "uuid",
   "itemId": "uuid"
 }
-
+```
 **Response**
 ```json
 {
@@ -842,7 +841,7 @@ Handles purchases, pricing, and transactions.
   "status": "success|failed",
   "reason": "string|null"
 }
-
+```
 #### GET /shop/items
 **Response**
 ```json
@@ -853,7 +852,7 @@ Handles purchases, pricing, and transactions.
     "price": "int"
   }
 ]
-
+```
 ## Inventory Service
 Tracks owned items and durability.
 **Database:** PostgreSQL  
@@ -870,7 +869,7 @@ Tracks owned items and durability.
     "durability": "float"
   }
 ]
-
+```
 #### POST /inventory/use
 **Request**
 ```json
@@ -878,14 +877,14 @@ Tracks owned items and durability.
   "userId": "uuid",
   "itemId": "uuid"
 }
-
+```
 **Response**
 ```json
 {
   "status": "success|failed",
   "updatedDurability": "float|null"
 }
-
+```
 ## Lobby Service
 Manages sessions, players, and game state.
 **Database**  Redis (real-time), PostgreSQL (persistent logs)
@@ -900,14 +899,14 @@ Manages sessions, players, and game state.
   "hostId": "uuid",
   "mapId": "uuid"
 }
-
+```
 **Response**
 ```json
 {
   "lobbyId": "uuid",
   "status": "created"
 }
-
+```
 #### POST /lobby/{lobbyId}/join
 
 **Request**
@@ -915,14 +914,14 @@ Manages sessions, players, and game state.
 {
   "userId": "uuid"
 }
-
+```
 **Response**
 ```json
 {
   "status": "joined",
   "players": ["uuid", "uuid"]
 }
-
+```
 ## Location Service
 Tracks player movements.
 **Database**  Redis (real-time cache)
@@ -938,14 +937,14 @@ Tracks player movements.
   "y": "float",
   "z": "float"
 }
-
+```
 **Response**
 ```json
 {
    "status": "updated",
   "timestamp": "timestamp"
 }
-
+```
 ## Ghost AI Service
 Handles ghost behavior logic.
 **Database**  Redis (real-time), PostgreSQL (logs)
@@ -989,6 +988,7 @@ Handles real-time communication with proximity rules.
     "lobbyId": "uuid",
     "userId": "uuid"
   }
+```
 
 **send_message**  
 ```json
@@ -997,7 +997,7 @@ Handles real-time communication with proximity rules.
   "to": "uuid|null",
   "message": "string"
 }
-
+```
 **receive_message**  
 ```json
 {
@@ -1005,7 +1005,7 @@ Handles real-time communication with proximity rules.
   "message": "string",
   "timestamp": "timestamp"
 }
-
+```
 ## Journal Service
 Manages ghost identification and scoring.
 **Database**   MongoDB (ghost data), PostgreSQL (scores)
@@ -1020,7 +1020,7 @@ Manages ghost identification and scoring.
   "lobbyId": "uuid",
   "ghostType": "string"
 }
-
+```
 **Response**
 ```json
 {
@@ -1028,7 +1028,7 @@ Manages ghost identification and scoring.
   "correct": "bool",
   "reward": "int"
 }
-
+```
 ## Map Service
 Handles layout and environmental assets.
 **Database**   MongoDB
@@ -1044,7 +1044,7 @@ Handles layout and environmental assets.
   "name": "string",
   "layout": "json"
 }
-
+```
 ## Ghost Service
 Stores and provides detailed information about ghost types, symptoms, and behavioral rules.
 **Database**   MongoDB (ghost encyclopedia), PostgreSQL (symptom usage logs)
@@ -1063,7 +1063,7 @@ Stores and provides detailed information about ghost types, symptoms, and behavi
     "typeBSymptoms": ["string", "string"]
   }
 ]
-
+```
 #### GET /ghosts/{ghostId}
 
 **Response**
@@ -1075,7 +1075,7 @@ Stores and provides detailed information about ghost types, symptoms, and behavi
   "typeASymptoms": ["string", "string"],
   "typeBSymptoms": ["string", "string"]
 }
-
+```
 #### POST /ghosts/validate
 
 **Request**
@@ -1084,14 +1084,14 @@ Stores and provides detailed information about ghost types, symptoms, and behavi
   "ghostId": "uuid",
   "submittedSymptoms": ["string"]
 }
-
+```
 **Response**
 ```json
 {
   "isMatch": "bool",
   "confidence": "float"
 }
-
+```
 
 ## GitHub Workflow Setup  
 
