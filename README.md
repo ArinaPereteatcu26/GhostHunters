@@ -493,7 +493,7 @@ Event-driven communication via **message queues**, ensuring responsiveness.
 
 **Technology Implementation:**
 
-- C# services → Apache Kafka + MassTransit
+- C# services → MassTransit
 
 - Node.js services → Redis Pub/Sub
 
@@ -692,14 +692,6 @@ Services communicate via **RESTful APIs and asynchronous messaging**:
     - **Shop Service** API to fetch current item list and prices.
     - **User Management Service** API to fetch friend list or user level.
 
-### 3.2 Asynchronous Communication (Message Broker)
-- Use a **message broker** (e.g., RabbitMQ, Kafka) for events that can be processed asynchronously.
-- Examples:
-    - Lobby Service publishes **player joined/left** events → Ghost AI and Location Service consume.
-    - Ghost AI publishes **ghost state updates** → Lobby Service subscribes to update player visibility.
-    - Inventory updates (item bought, durability changed) → Journal and Lobby Services consume.
-    - Chat messages can be broadcast via pub/sub channels to relevant users in the same room.
-
 ---
 
 ## 4. Data Flow Examples
@@ -740,7 +732,7 @@ Services communicate via **RESTful APIs and asynchronous messaging**:
 - `POST /lobbies/{id}/join` → add player to session
 - `POST /lobbies/{id}/leave` → remove player from session
 
-*(Similar contracts exist for other services; all events published to the message broker follow a consistent JSON schema.)*
+*(Similar contracts exist for other services;)*
 
 ---
 
@@ -1120,4 +1112,5 @@ Our repository follows a structured GitHub workflow to ensure quality and collab
 ### Versioning  
 - We follow **Semantic Versioning (SemVer)**: `MAJOR.MINOR.PATCH`.  
 - New releases are tagged in GitHub (e.g., `v1.0.0`).  
+
 
