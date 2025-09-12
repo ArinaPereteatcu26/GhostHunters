@@ -1,0 +1,30 @@
+[submodule "Inventory-Service"]
+	path = Inventory-Service
+	url = https://github.com/dgliga238/Inventory-Service.git
+[submodule "Chat-Service"]
+	path = Chat-Service
+	url = https://github.com/dgliga238/Chat-Service.git
+[submodule "GhostService"]
+	path = GhostService
+	url = https://github.com/Katrincik/GhostHunters_GhostService.git
+[submodule "LocationService"]
+	path = LocationService
+	url = https://github.com/Katrincik/GhostHunters_LocationService.git
+[submodule "Ghost-AI-Service"]
+	path = Ghost-AI-Service
+	url = https://github.com/ArinaPereteatcu26/GhostAiService.git
+[submodule "User-Management-Service"]
+	path = User-Management-Service
+	url = https://github.com/ArinaPereteatcu26/UserManagementService.git
+[submodule "Shop-Service"]
+	path = Shop-Service
+	url = https://github.com/sweet293/PAD-shop-service.git
+[submodule "Journal-Service"]
+	path = Journal-Service
+	url = https://github.com/sweet293/PAD-journal-service.git
+[submodule "Lobby-Service"]
+	path = Lobby-Service
+	url = https://github.com/zagorodniuchka/LobbyService.git
+[submodule "Map-Service"]
+	path = Map-Service
+	url = https://github.com/zagorodniuchka/MapService.git
