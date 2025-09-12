@@ -22,3 +22,9 @@
 [submodule "Journal-Service"]
 	path = Journal-Service
 	url = https://github.com/sweet293/PAD-journal-service.git
+[submodule "Lobby-Service"]
+	path = Lobby-Service
+	url = https://github.com/zagorodniuchka/LobbyService.git
+[submodule "Map-Service"]
+	path = Map-Service
+	url = https://github.com/zagorodniuchka/MapService.git
