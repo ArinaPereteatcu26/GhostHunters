@@ -1102,12 +1102,45 @@ Our repository follows a structured GitHub workflow to ensure quality and collab
 
 ### Pull Request Guidelines  
 - All changes must go through a PR before merging.  
-- Include a clear description of the changes and reference any related issues.  
-- Ensure all tests and status checks pass before merging.  
+- Include a clear description of the changes and reference any related issues.
+- Name the PL according to teh convention:
+  ```
+  <type>: <short summary>
+  ```
+  Examples:
 
-### Test Coverage  
+feat: add user profile API
+- Ensure all tests and status checks pass before merging.
+
+ ### Commit Guidelines
+- All changes must be committed with clear and descriptive messages. Commit messages should follow the convention:
+```
+<type>: <short description>
+```
+Examples:
+
+- feat: add endpoint for user profiles
+- fix: correct button alignment in navbar
+- docs: update contributing guide
+
+### Test Coverage
+
 - Automated tests run on each PR using GitHub Actions.  
-- A PR cannot be merged unless tests pass successfully.  
+- A PR cannot be merged unless all tests pass successfully.  
+
+**Baseline per microservice:**
+- **Unit tests:** ≥15  
+- **Integration tests:** ≥5  
+- **Contract (API) tests:** ≥3 (provider)  
+- **End-to-end (E2E) tests:** ≥2 key flows  
+- **Coverage:** keep ≥80% line coverage overall  
+
+**Scale as you grow:**
+- ➕ **+1 unit test** for each new non-trivial function or branch added  
+- ➕ **+1 contract test** per new/changed public endpoint (plus consumer tests in clients)  
+- ➕ **+1 integration test** for each new external dependency (DB table, queue, 3rd-party API)  
+- ➕ **+1 E2E scenario** whenever a change spans 3+ services or adds a new user journey  
+
 
 ### Versioning  
 - We follow **Semantic Versioning (SemVer)**: `MAJOR.MINOR.PATCH`.  
