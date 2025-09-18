@@ -58,9 +58,93 @@ Every ghost instance functions within its own thread or actor-based framework, g
 
 **Independence:** Separate processing units per ghost instance, isolated AI logic
 
+**States of Ghost:**
 
+| State | Description | Duration | Triggers |
+|-------|-------------|----------|----------|
+| DORMANT | Ghost is inactive, low activity | 30-120s | Low player activity, high sanity |
+| HIDING | Ghost is present but invisible | 10-60s | Players nearby, medium sanity |
+| STALKING | Following players, minor interactions | 20-90s | Player isolation, equipment usage |
+| HUNTING | Actively pursuing players | 15-45s | Low sanity, ghost evidence found |
+| MANIFESTING | Visible to players, heavy interactions | 5-30s | Very low sanity, direct provocation |
+| ATTACKING | Direct player damage/elimination | 2-10s | Critical sanity, cornered player |
+| RETREATING | Moving away from players | 10-30s | High sanity restored, objectives completed |
+| INTERACTING | Manipulating environment objects | 3-15s | Equipment detected, player proximity |
+| CHASING | High-speed player pursuit | 10-25s | Hunt mode triggered |
+| COOLING_DOWN | Post-activity recovery period | 45-180s | After major interactions |
 
----
+**Ghost Types:**
+- Spirit:
+```json
+{
+  "type": "spirit",
+  "baseAggression": 0.5,
+  "huntSanityThreshold": 50,
+  "evidenceTypes": ["emf_5", "spirit_writing", "spirit_box"],
+  "strengths": ["none_specific"],
+  "weaknesses": ["smudge_stick_effectiveness_extended"],
+  "specialAbilities": ["standard_behavior"],
+  "huntCooldown": 25,
+  "description": "Most common ghost type, balanced behavior"
+}
+```
+- Wraith: 
+```json
+{
+  "type": "wraith",
+  "baseAggression": 0.6,
+  "huntSanityThreshold": 50,
+  "evidenceTypes": ["emf_5", "spirit_box", "dots_projector"],
+  "strengths": ["no_footstep_sounds", "can_teleport_to_players"],
+  "weaknesses": ["toxic_reaction_to_salt"],
+  "specialAbilities": ["teleport_to_random_player", "footstep_immunity"],
+  "huntCooldown": 25,
+  "description": "Can teleport and leaves no footprints"
+}
+```
+- Phantom:
+```json
+{
+  "type": "phantom",
+  "baseAggression": 0.4,
+  "huntSanityThreshold": 50,
+  "evidenceTypes": ["spirit_box", "fingerprints", "dots_projector"],
+  "strengths": ["looking_reduces_sanity_faster", "invisible_in_photos"],
+  "weaknesses": ["taking_photo_reduces_visibility_time"],
+  "specialAbilities": ["sanity_drain_on_sight", "photo_invisibility"],
+  "huntCooldown": 25,
+  "description": "Drains sanity when seen, invisible in photos"
+}
+```
+- Poltergeist
+```json
+{
+  "type": "poltergeist",
+  "baseAggression": 0.7,
+  "huntSanityThreshold": 50,
+  "evidenceTypes": ["spirit_writing", "fingerprints", "spirit_box"],
+  "strengths": ["throws_multiple_objects", "many_objects_at_once"],
+  "weaknesses": ["ineffective_in_empty_rooms"],
+  "specialAbilities": ["multi_object_throw", "object_interaction_mastery"],
+  "huntCooldown": 25,
+  "description": "Throws many objects, more active with more items"
+}
+```
+- Demon
+```json
+{
+  "type": "demon",
+  "baseAggression": 1.0,
+  "huntSanityThreshold": 70,
+  "evidenceTypes": ["fingerprints", "spirit_writing", "freezing_temperatures"],
+  "strengths": ["hunts_at_any_sanity", "shorter_hunt_cooldown"],
+  "weaknesses": ["crucifix_more_effective", "ouija_board_less_sanity_loss"],
+  "specialAbilities": ["early_hunting", "crucifix_vulnerability"],
+  "huntCooldown": 20,
+  "description": "Most aggressive, can hunt at high sanity"
+}
+```
+--- 
 
 ### 3. Shop Service
 
@@ -965,6 +1049,41 @@ Handles ghost behavior logic.
   string behavior = 2;
   float aggressionLevel = 3;
 }
+
+### Decision Making Factors
+## Environmental Awareness
+```json
+{
+  "mapLayout": {
+    "roomConnections": ["room_id_1", "room_id_2"],
+    "hidingSpots": ["closet_1", "basement_corner"],
+    "interactableObjects": ["door_1", "light_switch_2"],
+    "playerSpawnPoints": [{"x": 10, "y": 0, "z": 15}]
+  },
+  "currentConditions": {
+    "lightLevel": 0.2,
+    "temperature": -5,
+    "activeEquipment": ["emf_reader", "spirit_box"],
+    "powerState": "on"
+  }
+}
+```
+### Player Tracking
+```json
+{
+  "playerStates": [
+    {
+      "playerId": "uuid",
+      "position": {"x": 12.5, "y": 0, "z": 18.3},
+      "sanity": 45,
+      "equipment": ["flashlight", "thermometer"],
+      "isAlone": true,
+      "fearLevel": 0.8,
+      "lastInteraction": "2024-01-01T12:30:00Z"
+    }
+  ]
+}
+```
 
 
 ## Chat Service  
