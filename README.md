@@ -802,6 +802,30 @@ Handles user profiles, authentication, and currency.
   "expiresIn": 3600
 }
 ```
+
+#### GET /users/{id}/profile
+**Response**
+```json
+{
+  "userId": "uuid",
+  "username": "string",
+  "email": "string",
+  "level": "int",
+  "currency": "int",
+  "createdAt": "timestamp"
+}
+```
+
+#### PUT /users/{id}/profile
+**Response**
+```json
+{
+  "userId": "uuid",
+  "username": "string",
+  "email": "string",
+  "updatedAt": "timestamp"
+}
+```
 #### GET /users/{id}/balance
 
 **Response**
@@ -811,6 +835,263 @@ Handles user profiles, authentication, and currency.
   "currency": "int"
 }
 ```
+
+#### POST /users/{id}/balance/increase
+**Response**
+```json
+{
+  "userId": "uuid",
+  "previousBalance": "int",
+  "newBalance": "int",
+  "amount": "int",
+  "transactionId": "uuid",
+  "timestamp": "timestamp"
+}
+```
+#### POST /users/{id}/balance/decrease
+**Response**
+```json
+{
+  "userId": "uuid",
+  "previousBalance": "int",
+  "newBalance": "int",
+  "amount": "int",
+  "transactionId": "uuid",
+  "timestamp": "timestamp"
+}
+```
+#### Error Response (Insufficient funds)
+**Response**
+```json
+{
+  "error": "insufficient_funds",
+  "message": "User has insufficient currency",
+  "currentBalance": "int",
+  "requestedAmount": "int"
+}
+```
+### Friendship Management
+#### POST /users/{id}/friends/request
+**Response**
+```json
+{
+  "requestId": "uuid",
+  "requesterId": "uuid",
+  "addresseeId": "uuid",
+  "status": "pending",
+  "createdAt": "timestamp"
+}
+```
+#### GET /users/{id}/friends/requests/pending
+**Response**
+```json
+{
+  "requests": [
+    {
+      "requestId": "uuid",
+      "requester": {
+        "userId": "uuid",
+        "username": "string",
+        "level": "int"
+      },
+      "createdAt": "timestamp"
+    }
+  ]
+}
+```
+#### PUT /users/{id}/friends/requests/{friendshipId}/accept
+**Response**
+```json
+{
+  "requestId": "uuid",
+  "status": "accepted",
+  "updatedAt": "timestamp"
+}
+```
+#### PUT /users/{id}/friends/requests/{friendshipId}/decline
+**Response**
+```json
+{
+  "requestId": "uuid",
+  "status": "rejected",
+  "updatedAt": "timestamp"
+}
+```
+#### GET /users/{id}/friends
+**Response**
+```json
+{
+  "friends": [
+    {
+      "userId": "uuid",
+      "username": "string",
+      "level": "int",
+      "friendshipId": "uuid",
+      "friendsSince": "timestamp"
+    }
+  ]
+}
+```
+
+#### DELETE /users/{id}/friends/{friendId}
+**Response**
+```json
+{
+  "message": "Friendship removed successfully",
+  "removedAt": "timestamp"
+}
+```
+### Message Broker Events
+#### Event Format Structure
+```json
+{
+  "eventId": "uuid",
+  "eventType": "string",
+  "timestamp": "timestamp",
+  "source": "user-service",
+  "version": "1.0",
+  "data": {
+    // Event-specific payload
+  }
+}
+```
+### User Events
+#### UserRegistered
+```json
+{
+  "eventId": "uuid",
+  "eventType": "UserRegistered",
+  "timestamp": "2024-01-01T12:00:00Z",
+  "source": "user-service",
+  "version": "1.0",
+  "data": {
+    "userId": "uuid",
+    "username": "string",
+    "email": "string",
+    "level": 1,
+    "initialCurrency": 100
+  }
+}
+```
+### UserProfileUpdated
+```json
+{
+  "eventId": "uuid",
+  "eventType": "UserProfileUpdated",
+  "timestamp": "2024-01-01T12:00:00Z",
+  "source": "user-service",
+  "version": "1.0",
+  "data": {
+    "userId": "uuid",
+    "updatedFields": {
+      "username": "string",
+      "email": "string"
+    }
+  }
+}
+```
+### Currency Events
+#### CurrencyIncreased
+```json
+{
+  "eventId": "uuid",
+  "eventType": "CurrencyIncreased",
+  "timestamp": "2024-01-01T12:00:00Z",
+  "source": "user-service",
+  "version": "1.0",
+  "data": {
+    "userId": "uuid",
+    "amount": 50,
+    "previousBalance": 100,
+    "newBalance": 150,
+    "reason": "game_reward",
+    "transactionId": "uuid"
+  }
+}
+```
+#### CurrencyDecreased
+```json
+{
+  "eventId": "uuid",
+  "eventType": "CurrencyDecreased",
+  "timestamp": "2024-01-01T12:00:00Z",
+  "source": "user-service",
+  "version": "1.0",
+  "data": {
+    "userId": "uuid",
+    "amount": 25,
+    "previousBalance": 150,
+    "newBalance": 125,
+    "reason": "item_purchase",
+    "transactionId": "uuid"
+  }
+}
+```
+### Friendship Events
+#### FriendRequestSent
+```json
+{
+  "eventId": "uuid",
+  "eventType": "FriendRequestSent",
+  "timestamp": "2024-01-01T12:00:00Z",
+  "source": "user-service",
+  "version": "1.0",
+  "data": {
+    "requestId": "uuid",
+    "requesterId": "uuid",
+    "addresseeId": "uuid"
+  }
+}
+```
+#### FriendRequestAccepted
+```json
+{
+  "eventId": "uuid",
+  "eventType": "FriendRequestAccepted",
+  "timestamp": "2024-01-01T12:00:00Z",
+  "source": "user-service",
+  "version": "1.0",
+  "data": {
+    "requestId": "uuid",
+    "friendshipId": "uuid",
+    "userId1": "uuid",
+    "userId2": "uuid"
+  }
+}
+```
+### FriendRequestRejected
+```json
+{
+  "eventId": "uuid",
+  "eventType": "FriendRequestRejected",
+  "timestamp": "2024-01-01T12:00:00Z",
+  "source": "user-service",
+  "version": "1.0",
+  "data": {
+    "requestId": "uuid",
+    "requesterId": "uuid",
+    "addresseeId": "uuid"
+  }
+}
+```
+
+#### Consuming currency events
+```json
+{
+  "eventId": "uuid",
+  "eventType": "GameCompleted",
+  "timestamp": "2024-01-01T12:00:00Z",
+  "source": "game-service",
+  "version": "1.0",
+  "data": {
+    "userId": "uuid",
+    "gameId": "uuid",
+    "score": 1500,
+    "rewardAmount": 50
+  }
+}
+```
+
 ## Shop Service
 Handles purchases, pricing, and transactions.
 **Database:** PostgreSQL  
