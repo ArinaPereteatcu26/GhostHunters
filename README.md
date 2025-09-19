@@ -58,9 +58,93 @@ Every ghost instance functions within its own thread or actor-based framework, g
 
 **Independence:** Separate processing units per ghost instance, isolated AI logic
 
+**States of Ghost:**
 
+| State | Description | Duration | Triggers |
+|-------|-------------|----------|----------|
+| DORMANT | Ghost is inactive, low activity | 30-120s | Low player activity, high sanity |
+| HIDING | Ghost is present but invisible | 10-60s | Players nearby, medium sanity |
+| STALKING | Following players, minor interactions | 20-90s | Player isolation, equipment usage |
+| HUNTING | Actively pursuing players | 15-45s | Low sanity, ghost evidence found |
+| MANIFESTING | Visible to players, heavy interactions | 5-30s | Very low sanity, direct provocation |
+| ATTACKING | Direct player damage/elimination | 2-10s | Critical sanity, cornered player |
+| RETREATING | Moving away from players | 10-30s | High sanity restored, objectives completed |
+| INTERACTING | Manipulating environment objects | 3-15s | Equipment detected, player proximity |
+| CHASING | High-speed player pursuit | 10-25s | Hunt mode triggered |
+| COOLING_DOWN | Post-activity recovery period | 45-180s | After major interactions |
 
----
+**Ghost Types:**
+- Spirit:
+```json
+{
+  "type": "spirit",
+  "baseAggression": 0.5,
+  "huntSanityThreshold": 50,
+  "evidenceTypes": ["emf_5", "spirit_writing", "spirit_box"],
+  "strengths": ["none_specific"],
+  "weaknesses": ["smudge_stick_effectiveness_extended"],
+  "specialAbilities": ["standard_behavior"],
+  "huntCooldown": 25,
+  "description": "Most common ghost type, balanced behavior"
+}
+```
+- Wraith: 
+```json
+{
+  "type": "wraith",
+  "baseAggression": 0.6,
+  "huntSanityThreshold": 50,
+  "evidenceTypes": ["emf_5", "spirit_box", "dots_projector"],
+  "strengths": ["no_footstep_sounds", "can_teleport_to_players"],
+  "weaknesses": ["toxic_reaction_to_salt"],
+  "specialAbilities": ["teleport_to_random_player", "footstep_immunity"],
+  "huntCooldown": 25,
+  "description": "Can teleport and leaves no footprints"
+}
+```
+- Phantom:
+```json
+{
+  "type": "phantom",
+  "baseAggression": 0.4,
+  "huntSanityThreshold": 50,
+  "evidenceTypes": ["spirit_box", "fingerprints", "dots_projector"],
+  "strengths": ["looking_reduces_sanity_faster", "invisible_in_photos"],
+  "weaknesses": ["taking_photo_reduces_visibility_time"],
+  "specialAbilities": ["sanity_drain_on_sight", "photo_invisibility"],
+  "huntCooldown": 25,
+  "description": "Drains sanity when seen, invisible in photos"
+}
+```
+- Poltergeist
+```json
+{
+  "type": "poltergeist",
+  "baseAggression": 0.7,
+  "huntSanityThreshold": 50,
+  "evidenceTypes": ["spirit_writing", "fingerprints", "spirit_box"],
+  "strengths": ["throws_multiple_objects", "many_objects_at_once"],
+  "weaknesses": ["ineffective_in_empty_rooms"],
+  "specialAbilities": ["multi_object_throw", "object_interaction_mastery"],
+  "huntCooldown": 25,
+  "description": "Throws many objects, more active with more items"
+}
+```
+- Demon
+```json
+{
+  "type": "demon",
+  "baseAggression": 1.0,
+  "huntSanityThreshold": 70,
+  "evidenceTypes": ["fingerprints", "spirit_writing", "freezing_temperatures"],
+  "strengths": ["hunts_at_any_sanity", "shorter_hunt_cooldown"],
+  "weaknesses": ["crucifix_more_effective", "ouija_board_less_sanity_loss"],
+  "specialAbilities": ["early_hunting", "crucifix_vulnerability"],
+  "huntCooldown": 20,
+  "description": "Most aggressive, can hunt at high sanity"
+}
+```
+--- 
 
 ### 3. Shop Service
 
@@ -802,6 +886,30 @@ Handles user profiles, authentication, and currency.
   "expiresIn": 3600
 }
 ```
+
+#### GET /users/{id}/profile
+**Response**
+```json
+{
+  "userId": "uuid",
+  "username": "string",
+  "email": "string",
+  "level": "int",
+  "currency": "int",
+  "createdAt": "timestamp"
+}
+```
+
+#### PUT /users/{id}/profile
+**Response**
+```json
+{
+  "userId": "uuid",
+  "username": "string",
+  "email": "string",
+  "updatedAt": "timestamp"
+}
+```
 #### GET /users/{id}/balance
 
 **Response**
@@ -811,6 +919,263 @@ Handles user profiles, authentication, and currency.
   "currency": "int"
 }
 ```
+
+#### POST /users/{id}/balance/increase
+**Response**
+```json
+{
+  "userId": "uuid",
+  "previousBalance": "int",
+  "newBalance": "int",
+  "amount": "int",
+  "transactionId": "uuid",
+  "timestamp": "timestamp"
+}
+```
+#### POST /users/{id}/balance/decrease
+**Response**
+```json
+{
+  "userId": "uuid",
+  "previousBalance": "int",
+  "newBalance": "int",
+  "amount": "int",
+  "transactionId": "uuid",
+  "timestamp": "timestamp"
+}
+```
+#### Error Response (Insufficient funds)
+**Response**
+```json
+{
+  "error": "insufficient_funds",
+  "message": "User has insufficient currency",
+  "currentBalance": "int",
+  "requestedAmount": "int"
+}
+```
+### Friendship Management
+#### POST /users/{id}/friends/request
+**Response**
+```json
+{
+  "requestId": "uuid",
+  "requesterId": "uuid",
+  "addresseeId": "uuid",
+  "status": "pending",
+  "createdAt": "timestamp"
+}
+```
+#### GET /users/{id}/friends/requests/pending
+**Response**
+```json
+{
+  "requests": [
+    {
+      "requestId": "uuid",
+      "requester": {
+        "userId": "uuid",
+        "username": "string",
+        "level": "int"
+      },
+      "createdAt": "timestamp"
+    }
+  ]
+}
+```
+#### PUT /users/{id}/friends/requests/{friendshipId}/accept
+**Response**
+```json
+{
+  "requestId": "uuid",
+  "status": "accepted",
+  "updatedAt": "timestamp"
+}
+```
+#### PUT /users/{id}/friends/requests/{friendshipId}/decline
+**Response**
+```json
+{
+  "requestId": "uuid",
+  "status": "rejected",
+  "updatedAt": "timestamp"
+}
+```
+#### GET /users/{id}/friends
+**Response**
+```json
+{
+  "friends": [
+    {
+      "userId": "uuid",
+      "username": "string",
+      "level": "int",
+      "friendshipId": "uuid",
+      "friendsSince": "timestamp"
+    }
+  ]
+}
+```
+
+#### DELETE /users/{id}/friends/{friendId}
+**Response**
+```json
+{
+  "message": "Friendship removed successfully",
+  "removedAt": "timestamp"
+}
+```
+### Message Broker Events
+#### Event Format Structure
+```json
+{
+  "eventId": "uuid",
+  "eventType": "string",
+  "timestamp": "timestamp",
+  "source": "user-service",
+  "version": "1.0",
+  "data": {
+    
+  }
+}
+```
+### User Events
+#### UserRegistered
+```json
+{
+  "eventId": "uuid",
+  "eventType": "UserRegistered",
+  "timestamp": "2024-01-01T12:00:00Z",
+  "source": "user-service",
+  "version": "1.0",
+  "data": {
+    "userId": "uuid",
+    "username": "string",
+    "email": "string",
+    "level": 1,
+    "initialCurrency": 100
+  }
+}
+```
+### UserProfileUpdated
+```json
+{
+  "eventId": "uuid",
+  "eventType": "UserProfileUpdated",
+  "timestamp": "2024-01-01T12:00:00Z",
+  "source": "user-service",
+  "version": "1.0",
+  "data": {
+    "userId": "uuid",
+    "updatedFields": {
+      "username": "string",
+      "email": "string"
+    }
+  }
+}
+```
+### Currency Events
+#### CurrencyIncreased
+```json
+{
+  "eventId": "uuid",
+  "eventType": "CurrencyIncreased",
+  "timestamp": "2024-01-01T12:00:00Z",
+  "source": "user-service",
+  "version": "1.0",
+  "data": {
+    "userId": "uuid",
+    "amount": 50,
+    "previousBalance": 100,
+    "newBalance": 150,
+    "reason": "game_reward",
+    "transactionId": "uuid"
+  }
+}
+```
+#### CurrencyDecreased
+```json
+{
+  "eventId": "uuid",
+  "eventType": "CurrencyDecreased",
+  "timestamp": "2024-01-01T12:00:00Z",
+  "source": "user-service",
+  "version": "1.0",
+  "data": {
+    "userId": "uuid",
+    "amount": 25,
+    "previousBalance": 150,
+    "newBalance": 125,
+    "reason": "item_purchase",
+    "transactionId": "uuid"
+  }
+}
+```
+### Friendship Events
+#### FriendRequestSent
+```json
+{
+  "eventId": "uuid",
+  "eventType": "FriendRequestSent",
+  "timestamp": "2024-01-01T12:00:00Z",
+  "source": "user-service",
+  "version": "1.0",
+  "data": {
+    "requestId": "uuid",
+    "requesterId": "uuid",
+    "addresseeId": "uuid"
+  }
+}
+```
+#### FriendRequestAccepted
+```json
+{
+  "eventId": "uuid",
+  "eventType": "FriendRequestAccepted",
+  "timestamp": "2024-01-01T12:00:00Z",
+  "source": "user-service",
+  "version": "1.0",
+  "data": {
+    "requestId": "uuid",
+    "friendshipId": "uuid",
+    "userId1": "uuid",
+    "userId2": "uuid"
+  }
+}
+```
+### FriendRequestRejected
+```json
+{
+  "eventId": "uuid",
+  "eventType": "FriendRequestRejected",
+  "timestamp": "2024-01-01T12:00:00Z",
+  "source": "user-service",
+  "version": "1.0",
+  "data": {
+    "requestId": "uuid",
+    "requesterId": "uuid",
+    "addresseeId": "uuid"
+  }
+}
+```
+
+#### Consuming currency events
+```json
+{
+  "eventId": "uuid",
+  "eventType": "GameCompleted",
+  "timestamp": "2024-01-01T12:00:00Z",
+  "source": "game-service",
+  "version": "1.0",
+  "data": {
+    "userId": "uuid",
+    "gameId": "uuid",
+    "score": 1500,
+    "rewardAmount": 50
+  }
+}
+```
+
 ## Shop Service
 Handles purchases, pricing, and transactions.
 **Database:** PostgreSQL  
@@ -965,6 +1330,41 @@ Handles ghost behavior logic.
   string behavior = 2;
   float aggressionLevel = 3;
 }
+
+### Decision Making Factors
+## Environmental Awareness
+```json
+{
+  "mapLayout": {
+    "roomConnections": ["room_id_1", "room_id_2"],
+    "hidingSpots": ["closet_1", "basement_corner"],
+    "interactableObjects": ["door_1", "light_switch_2"],
+    "playerSpawnPoints": [{"x": 10, "y": 0, "z": 15}]
+  },
+  "currentConditions": {
+    "lightLevel": 0.2,
+    "temperature": -5,
+    "activeEquipment": ["emf_reader", "spirit_box"],
+    "powerState": "on"
+  }
+}
+```
+### Player Tracking
+```json
+{
+  "playerStates": [
+    {
+      "playerId": "uuid",
+      "position": {"x": 12.5, "y": 0, "z": 18.3},
+      "sanity": 45,
+      "equipment": ["flashlight", "thermometer"],
+      "isAlone": true,
+      "fearLevel": 0.8,
+      "lastInteraction": "2024-01-01T12:30:00Z"
+    }
+  ]
+}
+```
 
 
 ## Chat Service  
