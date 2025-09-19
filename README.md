@@ -1443,6 +1443,24 @@ Stores and provides detailed information about ghost types, symptoms, and behavi
 
 ### Endpoints
 
+#### POST /ghosts
+
+**Request**
+```json
+{
+  "name": "string",
+  "typeASymptoms": ["string", "string"],
+  "typeBSymptoms": ["string", "string"]
+}
+```
+**Response**
+```json
+{
+  "ghostId": "uuid",
+  "message": "Ghost created successfully"
+}
+```
+
 #### GET /ghosts
 
 **Response**
@@ -1456,6 +1474,7 @@ Stores and provides detailed information about ghost types, symptoms, and behavi
   }
 ]
 ```
+
 #### GET /ghosts/{ghostId}
 
 **Response**
@@ -1463,25 +1482,37 @@ Stores and provides detailed information about ghost types, symptoms, and behavi
 {
   "ghostId": "uuid",
   "name": "string",
-  "description": "string",
   "typeASymptoms": ["string", "string"],
   "typeBSymptoms": ["string", "string"]
 }
 ```
-#### POST /ghosts/validate
+
+#### PUT /ghosts/{ghostId}
 
 **Request**
 ```json
 {
-  "ghostId": "uuid",
-  "submittedSymptoms": ["string"]
+  "name": "string",
+  "typeASymptoms": ["string", "string"],
+  "typeBSymptoms": ["string", "string"]
 }
 ```
 **Response**
 ```json
 {
-  "isMatch": "bool",
-  "confidence": "float"
+  "ghostId": "uuid",
+  "message": "Ghost updated successfully"
+}
+
+```
+
+#### DELETE /ghosts/{ghostId}
+
+**Response**
+```json
+{
+  "ghostId": "uuid",
+  "message": "Ghost deleted successfully"
 }
 ```
 
