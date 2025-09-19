@@ -287,31 +287,30 @@ The service outlines the essential traits of every ghost type, supplying referen
 
 ### 8. Location Service
 
-The Location Service offers live tracking of player locations and activities across the game environment. This service observes player movement between rooms, records occupancy levels, and tracks all interactions with items as they happen. It stays conscious of social situations, recognizing when individuals are solitary or in crowds and if they are talking or staying silent. 
-
-The service monitors visibility status and provides timestamped updated data to guarantee that all location details stay current and precise. All data regarding player locations, interaction records, and movement histories are stored in the service's dedicated real-time tracking database.
+The Location Service tracks player movements and interactions in real time across the game environment. It monitors which room players are in, their interactions with items, and their social context—whether they are alone or in a group, speaking or silent, hiding or visible. All data is timestamped to ensure only the freshest information is served.
 
 **Responsibility:** Real-time player position and interaction tracking
 
 
 **Core Functions:**
 
-- Player movement tracking
+- Player movement tracking (coordinates, rooms)
 
 - Room occupancy monitoring
 
 - Item interaction logging
 
-- Social context tracking (alone/group, speaking/quiet)
+- Social context tracking (alone/group, speaking/quiet, hiding/visible)
 
 - Visibility status management
 
 - Timestamp-based fresh data serving
 
-
 **Data Owned:** Player locations, interaction logs, movement history
 
 **Independence:** Real-time tracking system with own location database
+
+**Database:** Redis (real-time cache)
 
 ---
 
@@ -422,9 +421,9 @@ our platform utilizes three unique technology stacks, each tailored to meet part
 
 ### C#/.NET: The Robust Enterprise Foundation
 
-Our infrastructure will be built on \*\*C# 12 with .NET 8\*\*, supporting essential services such as \*\*Location Service, Ghost AI Service, Lobby Service, User Management Service, Shop Service, and Inventory Service\*\*.
+Our infrastructure will be built on **C# 12 with .NET 8**, supporting essential services such as **Location Service, Ghost AI Service, Lobby Service, User Management Service, Shop Service, and Inventory Service**.
 
-These services will be developed with \*\*ASP.NET Core\*\* for strong Web APIs, \*\*SignalR\*\* for instant communication, and \*\*Entity Framework Core\*\* for smooth database interactions. SQL will act as the database. All processes operate within containers using Docker.
+These services will be developed with **ASP.NET Core** for strong Web APIs, **SignalR** for instant communication, and **Entity Framework Core** for smooth database interactions. SQL will act as the database. All processes operate within containers using Docker.
 
 **Business Justification:**
 
@@ -1280,7 +1279,7 @@ Manages sessions, players, and game state.
 }
 ```
 ## Location Service
-Tracks player movements.
+Tracks player movements over the map.
 **Database**  Redis (real-time cache)
 
 ### Endpoints
@@ -1290,10 +1289,20 @@ Tracks player movements.
 ```json
 {
   "userId": "uuid",
-  "x": "float",
-  "y": "float",
-  "z": "float"
+  "coordinates": {
+    "x": "float",
+    "y": "float",
+    "z": "float"
+  },
+  "room": "string",
+  "item": "string",
+  "status": {
+    "alone": "bool",
+    "speaking": "bool",
+    "hiding": "bool"
+  }
 }
+
 ```
 **Response**
 ```json
@@ -1302,6 +1311,35 @@ Tracks player movements.
   "timestamp": "timestamp"
 }
 ```
+
+### Events Publishing
+
+Since the service does not provide a read endpoint, it publishes player location updates via a message broker.
+
+#### Event Format
+
+```json
+{
+  "eventType": "PLAYER_LOCATION_UPDATE",
+  "userId": "uuid",
+  "coordinates": {
+    "x": "float",
+    "y": "float",
+    "z": "float"
+  },
+  "room": "string",
+  "item": "string",
+  "status": {
+    "alone": "bool",
+    "speaking": "bool",
+    "hiding": "bool"
+  },
+  "timestamp": "timestamp"
+}
+```
+
+This structure allows other services to subscribe to real-time location events without directly reading from the Location Service database.
+
 ## Ghost AI Service
 Handles ghost behavior logic.
 **Database**  Redis (real-time), PostgreSQL (logs)
