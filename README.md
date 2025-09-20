@@ -1209,37 +1209,119 @@ Handles purchases, pricing, and transactions.
   }
 ]
 ```
+
 ## Inventory Service
 Tracks owned items and durability.
-**Database:** PostgreSQL  
+
+### Database
+- **mySQL**
 
 ### Endpoints
 
-#### GET /inventory/{userId}
+#### POST `/users`
+Create a new user.
+
+**Query Params**
+- `name`: string (unique, required)
+
+**Response**
+```json
+{
+  "id": 1,
+  "name": "Alice"
+}
+```
+
+#### GET `/users`
+**Response**
+```json
+{
+  { "id": 1, "name": "Alice" },
+  { "id": 2, "name": "Bob" }
+}
+```
+
+#### POST `/objects`
+
+Query Params:
+```
+name: string (unique, required)
+description: string
+max_durability: integer (required)
+```
+**Response**
+```json
+{
+  "id": 1,
+  "name": "Sword",
+  "description": "Sharp blade",
+  "max_durability": 100
+}
+```
+
+#### GET `/objects`
+
 **Response**
 ```json
 [
   {
-    "itemId": "uuid",
-    "name": "string",
-    "durability": "float"
+    "id": 1,
+    "name": "Sword",
+    "description": "Sharp blade",
+    "max_durability": 100
+  },
+  {
+    "id": 2,
+    "name": "Shield",
+    "description": "Wooden shield",
+    "max_durability": 80
   }
 ]
 ```
-#### POST /inventory/use
-**Request**
-```json
-{
-  "userId": "uuid",
-  "itemId": "uuid"
-}
+
+#### POST `/ownerships`
+Assign an object to a user (record purchase).
+
+Query Params:
+```
+user_id: integer (required)
+object_id: integer (required)
+price: float (required)
+durability_remaining: integer (≤ object’s max_durability, required)
 ```
 **Response**
 ```json
 {
-  "status": "success|failed",
-  "updatedDurability": "float|null"
+  "id": 1,
+  "user_id": 1,
+  "object_id": 1,
+  "purchased_at": "2025-09-17T12:34:56.123456",
+  "price": 50.0,
+  "durability_remaining": 100
 }
+```
+#### GET `/ownerships`
+
+**Response**
+```json
+[
+  {
+    "id": 1,
+    "user_id": 1,
+    "object_id": 1,
+    "purchased_at": "2025-09-17T12:34:56.123456",
+    "price": 50.0,
+    "durability_remaining": 100
+  },
+  {
+    "id": 2,
+    "user_id": 2,
+    "object_id": 2,
+    "purchased_at": "2025-09-17T13:00:00.000000",
+    "price": 30.0,
+    "durability_remaining": 80
+  }
+]
 ```
 ## Lobby Service
 Manages sessions, players, and game state.
@@ -1404,38 +1486,142 @@ Handles ghost behavior logic.
 }
 ```
 
+## Chat Service 
+This module handles real-time communication between users with support for proximity-based rules.  
+The transport layer is powered by **WebSocket**.
 
-## Chat Service  
+---
 
-Handles real-time communication with proximity rules.  
-**Transport:** WebSocket (Socket.IO)  
+### Transport
 
-### Events  
+- **Protocol**: WebSocket  
+- **Library**: Socket.IO  
 
-**join_room**  
-```json
-  {
-    "lobbyId": "uuid",
-    "userId": "uuid"
-  }
+### Users
+
+#### Create user
+
 ```
-
-**send_message**  
-```json
+POST /users
+Content-Type: application/json
 {
-  "from": "uuid",
-  "to": "uuid|null",
-  "message": "string"
+  "name": "Alice",
+  "has_radio": true
 }
 ```
-**receive_message**  
+
+**201 Created →**
+
 ```json
+{ "id": 1, "name": "Alice", "has_radio": true }
+```
+
+#### List users
+
+```
+GET /users
+```
+
+#### Get user by id
+
+```
+GET /users/{user_id}
+```
+
+#### Update user (partial)
+
+```
+PATCH /users/{user_id}
+Content-Type: application/json
+{ "name": "Alice Cooper", "has_radio": false }
+```
+
+
+### Rooms & Memberships
+
+#### Create room
+
+```
+POST /rooms
+Content-Type: application/json
+{ "name": "Lobby" }
+```
+
+#### List rooms
+
+```
+GET /rooms
+```
+
+
+#### Add member to room
+
+```
+POST /rooms/{room_id}/members
+Content-Type: application/json
+{ "user_id": 1 }
+```
+
+#### List members in a room
+
+```
+GET /rooms/{room_id}/members
+```
+
+### Messages
+
+#### Send a message
+
+```
+POST /messages
+Content-Type: application/json
 {
-  "from": "uuid",
-  "message": "string",
-  "timestamp": "timestamp"
+  "sender_id": 1,
+  "content": "hello room",
+  "room_id": 10
 }
 ```
+
+Or a direct (radio) message:
+
+```json
+{
+  "sender_id": 1,
+  "content": "pssst",
+  "recipient_id": 2
+}
+```
+
+Rules in this version:
+
+* Exactly one of `room_id` or `recipient_id` must be provided.
+* For direct messages, `sender` must have `has_radio = true`.
+
+```json
+{
+  "id": 42,
+  "sender_id": 1,
+  "content": "hello room",
+  "room_id": 10,
+  "recipient_id": null,
+  "timestamp": "2025-09-17T12:34:56.789012"
+}
+```
+
+#### List messages
+
+```
+GET /messages
+```
+
+Query params:
+
+* `room_id` *(int, optional)* — filter messages by room
+* `between` *(repeated int, optional)* — exactly two user ids for a DM thread, e.g. `?between=1&between=2`
+* `limit` *(int, default 50, max 200)*
+---
+
+
 ## Journal Service
 Manages ghost identification and scoring.
 **Database**   MongoDB (ghost data), PostgreSQL (scores)
