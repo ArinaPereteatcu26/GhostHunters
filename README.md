@@ -287,31 +287,30 @@ The service outlines the essential traits of every ghost type, supplying referen
 
 ### 8. Location Service
 
-The Location Service offers live tracking of player locations and activities across the game environment. This service observes player movement between rooms, records occupancy levels, and tracks all interactions with items as they happen. It stays conscious of social situations, recognizing when individuals are solitary or in crowds and if they are talking or staying silent. 
-
-The service monitors visibility status and provides timestamped updated data to guarantee that all location details stay current and precise. All data regarding player locations, interaction records, and movement histories are stored in the service's dedicated real-time tracking database.
+The Location Service tracks player movements and interactions in real time across the game environment. It monitors which room players are in, their interactions with items, and their social context—whether they are alone or in a group, speaking or silent, hiding or visible. All data is timestamped to ensure only the freshest information is served.
 
 **Responsibility:** Real-time player position and interaction tracking
 
 
 **Core Functions:**
 
-- Player movement tracking
+- Player movement tracking (coordinates, rooms)
 
 - Room occupancy monitoring
 
 - Item interaction logging
 
-- Social context tracking (alone/group, speaking/quiet)
+- Social context tracking (alone/group, speaking/quiet, hiding/visible)
 
 - Visibility status management
 
 - Timestamp-based fresh data serving
 
-
 **Data Owned:** Player locations, interaction logs, movement history
 
 **Independence:** Real-time tracking system with own location database
+
+**Database:** Redis (real-time cache)
 
 ---
 
@@ -422,9 +421,9 @@ our platform utilizes three unique technology stacks, each tailored to meet part
 
 ### C#/.NET: The Robust Enterprise Foundation
 
-Our infrastructure will be built on \*\*C# 12 with .NET 8\*\*, supporting essential services such as \*\*Location Service, Ghost AI Service, Lobby Service, User Management Service, Shop Service, and Inventory Service\*\*.
+Our infrastructure will be built on **C# 12 with .NET 8**, supporting essential services such as **Location Service, Ghost AI Service, Lobby Service, User Management Service, Shop Service, and Inventory Service**.
 
-These services will be developed with \*\*ASP.NET Core\*\* for strong Web APIs, \*\*SignalR\*\* for instant communication, and \*\*Entity Framework Core\*\* for smooth database interactions. SQL will act as the database. All processes operate within containers using Docker.
+These services will be developed with **ASP.NET Core** for strong Web APIs, **SignalR** for instant communication, and **Entity Framework Core** for smooth database interactions. SQL will act as the database. All processes operate within containers using Docker.
 
 **Business Justification:**
 
@@ -1035,7 +1034,7 @@ Handles user profiles, authentication, and currency.
   "source": "user-service",
   "version": "1.0",
   "data": {
-    // Event-specific payload
+    
   }
 }
 ```
@@ -1210,37 +1209,119 @@ Handles purchases, pricing, and transactions.
   }
 ]
 ```
+
 ## Inventory Service
 Tracks owned items and durability.
-**Database:** PostgreSQL  
+
+### Database
+- **mySQL**
 
 ### Endpoints
 
-#### GET /inventory/{userId}
+#### POST `/users`
+Create a new user.
+
+**Query Params**
+- `name`: string (unique, required)
+
+**Response**
+```json
+{
+  "id": 1,
+  "name": "Alice"
+}
+```
+
+#### GET `/users`
+**Response**
+```json
+{
+  { "id": 1, "name": "Alice" },
+  { "id": 2, "name": "Bob" }
+}
+```
+
+#### POST `/objects`
+
+Query Params:
+```
+name: string (unique, required)
+description: string
+max_durability: integer (required)
+```
+**Response**
+```json
+{
+  "id": 1,
+  "name": "Sword",
+  "description": "Sharp blade",
+  "max_durability": 100
+}
+```
+
+#### GET `/objects`
+
 **Response**
 ```json
 [
   {
-    "itemId": "uuid",
-    "name": "string",
-    "durability": "float"
+    "id": 1,
+    "name": "Sword",
+    "description": "Sharp blade",
+    "max_durability": 100
+  },
+  {
+    "id": 2,
+    "name": "Shield",
+    "description": "Wooden shield",
+    "max_durability": 80
   }
 ]
 ```
-#### POST /inventory/use
-**Request**
-```json
-{
-  "userId": "uuid",
-  "itemId": "uuid"
-}
+
+#### POST `/ownerships`
+Assign an object to a user (record purchase).
+
+Query Params:
+```
+user_id: integer (required)
+object_id: integer (required)
+price: float (required)
+durability_remaining: integer (≤ object’s max_durability, required)
 ```
 **Response**
 ```json
 {
-  "status": "success|failed",
-  "updatedDurability": "float|null"
+  "id": 1,
+  "user_id": 1,
+  "object_id": 1,
+  "purchased_at": "2025-09-17T12:34:56.123456",
+  "price": 50.0,
+  "durability_remaining": 100
 }
+```
+#### GET `/ownerships`
+
+**Response**
+```json
+[
+  {
+    "id": 1,
+    "user_id": 1,
+    "object_id": 1,
+    "purchased_at": "2025-09-17T12:34:56.123456",
+    "price": 50.0,
+    "durability_remaining": 100
+  },
+  {
+    "id": 2,
+    "user_id": 2,
+    "object_id": 2,
+    "purchased_at": "2025-09-17T13:00:00.000000",
+    "price": 30.0,
+    "durability_remaining": 80
+  }
+]
 ```
 ## Lobby Service
 Manages sessions, players, and game state.
@@ -1280,7 +1361,7 @@ Manages sessions, players, and game state.
 }
 ```
 ## Location Service
-Tracks player movements.
+Tracks player movements over the map.
 **Database**  Redis (real-time cache)
 
 ### Endpoints
@@ -1290,10 +1371,20 @@ Tracks player movements.
 ```json
 {
   "userId": "uuid",
-  "x": "float",
-  "y": "float",
-  "z": "float"
+  "coordinates": {
+    "x": "float",
+    "y": "float",
+    "z": "float"
+  },
+  "room": "string",
+  "item": "string",
+  "status": {
+    "alone": "bool",
+    "speaking": "bool",
+    "hiding": "bool"
+  }
 }
+
 ```
 **Response**
 ```json
@@ -1302,6 +1393,35 @@ Tracks player movements.
   "timestamp": "timestamp"
 }
 ```
+
+### Events Publishing
+
+Since the service does not provide a read endpoint, it publishes player location updates via a message broker.
+
+#### Event Format
+
+```json
+{
+  "eventType": "PLAYER_LOCATION_UPDATE",
+  "userId": "uuid",
+  "coordinates": {
+    "x": "float",
+    "y": "float",
+    "z": "float"
+  },
+  "room": "string",
+  "item": "string",
+  "status": {
+    "alone": "bool",
+    "speaking": "bool",
+    "hiding": "bool"
+  },
+  "timestamp": "timestamp"
+}
+```
+
+This structure allows other services to subscribe to real-time location events without directly reading from the Location Service database.
+
 ## Ghost AI Service
 Handles ghost behavior logic.
 **Database**  Redis (real-time), PostgreSQL (logs)
@@ -1366,38 +1486,142 @@ Handles ghost behavior logic.
 }
 ```
 
+## Chat Service 
+This module handles real-time communication between users with support for proximity-based rules.  
+The transport layer is powered by **WebSocket**.
 
-## Chat Service  
+---
 
-Handles real-time communication with proximity rules.  
-**Transport:** WebSocket (Socket.IO)  
+### Transport
 
-### Events  
+- **Protocol**: WebSocket  
+- **Library**: Socket.IO  
 
-**join_room**  
-```json
-  {
-    "lobbyId": "uuid",
-    "userId": "uuid"
-  }
+### Users
+
+#### Create user
+
 ```
-
-**send_message**  
-```json
+POST /users
+Content-Type: application/json
 {
-  "from": "uuid",
-  "to": "uuid|null",
-  "message": "string"
+  "name": "Alice",
+  "has_radio": true
 }
 ```
-**receive_message**  
+
+**201 Created →**
+
 ```json
+{ "id": 1, "name": "Alice", "has_radio": true }
+```
+
+#### List users
+
+```
+GET /users
+```
+
+#### Get user by id
+
+```
+GET /users/{user_id}
+```
+
+#### Update user (partial)
+
+```
+PATCH /users/{user_id}
+Content-Type: application/json
+{ "name": "Alice Cooper", "has_radio": false }
+```
+
+
+### Rooms & Memberships
+
+#### Create room
+
+```
+POST /rooms
+Content-Type: application/json
+{ "name": "Lobby" }
+```
+
+#### List rooms
+
+```
+GET /rooms
+```
+
+
+#### Add member to room
+
+```
+POST /rooms/{room_id}/members
+Content-Type: application/json
+{ "user_id": 1 }
+```
+
+#### List members in a room
+
+```
+GET /rooms/{room_id}/members
+```
+
+### Messages
+
+#### Send a message
+
+```
+POST /messages
+Content-Type: application/json
 {
-  "from": "uuid",
-  "message": "string",
-  "timestamp": "timestamp"
+  "sender_id": 1,
+  "content": "hello room",
+  "room_id": 10
 }
 ```
+
+Or a direct (radio) message:
+
+```json
+{
+  "sender_id": 1,
+  "content": "pssst",
+  "recipient_id": 2
+}
+```
+
+Rules in this version:
+
+* Exactly one of `room_id` or `recipient_id` must be provided.
+* For direct messages, `sender` must have `has_radio = true`.
+
+```json
+{
+  "id": 42,
+  "sender_id": 1,
+  "content": "hello room",
+  "room_id": 10,
+  "recipient_id": null,
+  "timestamp": "2025-09-17T12:34:56.789012"
+}
+```
+
+#### List messages
+
+```
+GET /messages
+```
+
+Query params:
+
+* `room_id` *(int, optional)* — filter messages by room
+* `between` *(repeated int, optional)* — exactly two user ids for a DM thread, e.g. `?between=1&between=2`
+* `limit` *(int, default 50, max 200)*
+---
+
+
 ## Journal Service
 Manages ghost identification and scoring.
 **Database**   MongoDB (ghost data), PostgreSQL (scores)
@@ -1443,6 +1667,24 @@ Stores and provides detailed information about ghost types, symptoms, and behavi
 
 ### Endpoints
 
+#### POST /ghosts
+
+**Request**
+```json
+{
+  "name": "string",
+  "typeASymptoms": ["string", "string"],
+  "typeBSymptoms": ["string", "string"]
+}
+```
+**Response**
+```json
+{
+  "ghostId": "uuid",
+  "message": "Ghost created successfully"
+}
+```
+
 #### GET /ghosts
 
 **Response**
@@ -1456,6 +1698,7 @@ Stores and provides detailed information about ghost types, symptoms, and behavi
   }
 ]
 ```
+
 #### GET /ghosts/{ghostId}
 
 **Response**
@@ -1463,25 +1706,37 @@ Stores and provides detailed information about ghost types, symptoms, and behavi
 {
   "ghostId": "uuid",
   "name": "string",
-  "description": "string",
   "typeASymptoms": ["string", "string"],
   "typeBSymptoms": ["string", "string"]
 }
 ```
-#### POST /ghosts/validate
+
+#### PUT /ghosts/{ghostId}
 
 **Request**
 ```json
 {
-  "ghostId": "uuid",
-  "submittedSymptoms": ["string"]
+  "name": "string",
+  "typeASymptoms": ["string", "string"],
+  "typeBSymptoms": ["string", "string"]
 }
 ```
 **Response**
 ```json
 {
-  "isMatch": "bool",
-  "confidence": "float"
+  "ghostId": "uuid",
+  "message": "Ghost updated successfully"
+}
+
+```
+
+#### DELETE /ghosts/{ghostId}
+
+**Response**
+```json
+{
+  "ghostId": "uuid",
+  "message": "Ghost deleted successfully"
 }
 ```
 
