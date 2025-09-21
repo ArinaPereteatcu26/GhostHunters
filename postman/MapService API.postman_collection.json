@@ -1,0 +1,346 @@
+{
+	"info": {
+		"_postman_id": "7ba4c93c-80b3-4dd8-86f4-52a62c0725d1",
+		"name": "MapService API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "24063280"
+	},
+	"item": [
+		{
+			"name": "GetAllHouses",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5035/api/houses",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5035",
+					"path": [
+						"api",
+						"houses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateHouse",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"id\": 0, \"name\": \"Haunted Mansion\", \"rooms\": [] }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5035/api/houses",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5035",
+					"path": [
+						"api",
+						"houses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateHouse",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"id\": 1, \"name\": \"Spooky Castle\" }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5035/api/houses/{id}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5035",
+					"path": [
+						"api",
+						"houses",
+						"{id}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteHouse",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5035/api/houses/{id}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5035",
+					"path": [
+						"api",
+						"houses",
+						"{id}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetAllObjects",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5035/api/objects",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5035",
+					"path": [
+						"api",
+						"objects"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateObject",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"id\": 0, \"name\": \"Chair\", \"isHiding\": false }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5035/api/objects",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5035",
+					"path": [
+						"api",
+						"objects"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateObject",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"id\": 1, \"name\": \"Table\", \"isHiding\": true }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5035/api/objects/{id}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5035",
+					"path": [
+						"api",
+						"objects",
+						"{id}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteObject",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5035/api/objects/{id}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5035",
+					"path": [
+						"api",
+						"objects",
+						"{id}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetRooms",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5035/api/rooms",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5035",
+					"path": [
+						"api",
+						"rooms"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateRoom",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"id\": 0, \"objects\": [{ \"id\": 1, \"name\": \"Chair\", \"isHiding\": false }] }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5035/api/rooms",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5035",
+					"path": [
+						"api",
+						"rooms"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateRoom",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"id\": 1, \"objects\": [{ \"id\": 2, \"name\": \"Table\", \"isHiding\": true }] }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5035/api/rooms/{id}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5035",
+					"path": [
+						"api",
+						"rooms",
+						"{id}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteRoom",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5035/api/rooms/{id}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5035",
+					"path": [
+						"api",
+						"rooms",
+						"{id}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
