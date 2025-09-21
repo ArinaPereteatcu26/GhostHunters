@@ -1,0 +1,89 @@
+{
+  "info": {
+    "name": "Ghost Service",
+    "_postman_id": "ghost_service",
+    "description": "Postman collection for Ghost Service.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Ghost",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Poltergeist\",\n  \"typeASymptoms\": [\"moving objects\"],\n  \"typeBSymptoms\": [\"cold spots\"]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:4001/ghosts",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "4001",
+          "path": ["ghosts"]
+        }
+      }
+    },
+    {
+      "name": "Get All Ghosts",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:4001/ghosts",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "4001",
+          "path": ["ghosts"]
+        }
+      }
+    },
+    {
+      "name": "Get Ghost by ID",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:4001/ghosts/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "4001",
+          "path": ["ghosts", "1"]
+        }
+      }
+    },
+    {
+      "name": "Update Ghost",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Friendly Poltergeist\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:4001/ghosts/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "4001",
+          "path": ["ghosts", "1"]
+        }
+      }
+    },
+    {
+      "name": "Delete Ghost",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "http://localhost:4001/ghosts/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "4001",
+          "path": ["ghosts", "1"]
+        }
+      }
+    }
+  ]
+}
