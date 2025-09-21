@@ -2,7 +2,9 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Ghost-AI-Service" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/GhostService" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/LocationService" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/User-Management-Service" vcs="Git" />
   </component>
 </project>

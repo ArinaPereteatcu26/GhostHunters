@@ -1,0 +1,446 @@
+{
+	"info": {
+		"_postman_id": "8cfa1279-c6e8-4ae5-a07c-a15c977df354",
+		"name": "GhosAiService",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30102624",
+		"_collection_link": "https://www.postman.com/arina8/workspace/ghostaiservice/collection/30102624-8cfa1279-c6e8-4ae5-a07c-a15c977df354?action=share&source=collection_link&creator=30102624"
+	},
+	"item": [
+		{
+			"name": "Api Behaviour Control",
+			"item": [
+				{
+					"name": "Get active ghost actors",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}} /api/aibehavior/active-actors",
+							"host": [
+								"{{baseUrl}} "
+							],
+							"path": [
+								"api",
+								"aibehavior",
+								"active-actors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Start individual ghost actor",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/aibehavior/start-actor/{ghostId}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"aibehavior",
+								"start-actor",
+								"{ghostId}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Stop individual ghost actor",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}  /api/aibehavior/stop-actor/{ghostId}",
+							"host": [
+								"{{baseUrl}}  "
+							],
+							"path": [
+								"api",
+								"aibehavior",
+								"stop-actor",
+								"{ghostId}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Emergency stop all actors",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}} /api/aibehavior/stop-all-actors",
+							"host": [
+								"{{baseUrl}} "
+							],
+							"path": [
+								"api",
+								"aibehavior",
+								"stop-all-actors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get recent behaviors",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}} /api/aibehavior/behaviors/recent",
+							"host": [
+								"{{baseUrl}} "
+							],
+							"path": [
+								"api",
+								"aibehavior",
+								"behaviors",
+								"recent"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Test ghost decision making",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/aibehavior/test-decision/{ghostId}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"aibehavior",
+								"test-decision",
+								"{ghostId}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "GhostManagement",
+			"item": [
+				{
+					"name": "Get all ghosts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}} /api/ghosts",
+							"host": [
+								"{{baseUrl}} "
+							],
+							"path": [
+								"api",
+								"ghosts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get ghost by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}} /api/ghosts{id}",
+							"host": [
+								"{{baseUrl}} "
+							],
+							"path": [
+								"api",
+								"ghosts{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create new ghost",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}} /api/ghosts",
+							"host": [
+								"{{baseUrl}} "
+							],
+							"path": [
+								"api",
+								"ghosts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update ghost",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}} /api/ghosts{id}",
+							"host": [
+								"{{baseUrl}} "
+							],
+							"path": [
+								"api",
+								"ghosts{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete ghost",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}} /api/ghosts{id}",
+							"host": [
+								"{{baseUrl}} "
+							],
+							"path": [
+								"api",
+								"ghosts{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Activate ghost AI",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}} /api/ghosts/{id}/activate",
+							"host": [
+								"{{baseUrl}} "
+							],
+							"path": [
+								"api",
+								"ghosts",
+								"{id}",
+								"activate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deactivate ghost AI",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}} /api/ghosts/{id}/deactivate",
+							"host": [
+								"{{baseUrl}} "
+							],
+							"path": [
+								"api",
+								"ghosts",
+								"{id}",
+								"deactivate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Trigger manual ghost action",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}} /api/ghosts/{id}/action",
+							"host": [
+								"{{baseUrl}} "
+							],
+							"path": [
+								"api",
+								"ghosts",
+								"{id}",
+								"action"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get ghost behavior history",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}} /api/ghosts/{id}/behaviours",
+							"host": [
+								"{{baseUrl}} "
+							],
+							"path": [
+								"api",
+								"ghosts",
+								"{id}",
+								"behaviours"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "LobbyManagement",
+			"item": [
+				{
+					"name": "Get all lobbies",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}} /api/lobby",
+							"host": [
+								"{{baseUrl}} "
+							],
+							"path": [
+								"api",
+								"lobby"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get lobby by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}} /api/lobby{id}",
+							"host": [
+								"{{baseUrl}} "
+							],
+							"path": [
+								"api",
+								"lobby{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create new lobby",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}} /api/lobby",
+							"host": [
+								"{{baseUrl}} "
+							],
+							"path": [
+								"api",
+								"lobby"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update lobby",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}} /api/lobby/{id}",
+							"host": [
+								"{{baseUrl}} "
+							],
+							"path": [
+								"api",
+								"lobby",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete lobbys",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}} /api/lobby/{id}",
+							"host": [
+								"{{baseUrl}} "
+							],
+							"path": [
+								"api",
+								"lobby",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Start AI for all ghosts in lobby",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/lobby/{id}/start-ai",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"lobby",
+								"{id}",
+								"start-ai"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get detailed lobby status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}} /api/lobby/{id}/status",
+							"host": [
+								"{{baseUrl}} "
+							],
+							"path": [
+								"api",
+								"lobby",
+								"{id}",
+								"status"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
