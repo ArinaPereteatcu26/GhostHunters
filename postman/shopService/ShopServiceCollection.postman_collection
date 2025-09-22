@@ -1,0 +1,72 @@
+{
+	"info": {
+		"_postman_id": "03b3ce2b-84ac-4580-a9c1-4b68126063e1",
+		"name": "Shop Service Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48647628",
+		"_collection_link": "https://andreeaburdui-5897396.postman.co/workspace/andreeaburdui's-Workspace~2b17c17c-9392-48b4-8b4e-f676da439bb9/collection/48647628-03b3ce2b-84ac-4580-a9c1-4b68126063e1?action=share&source=collection_link&creator=48647628"
+	},
+	"item": [
+		{
+			"name": "Shop Items",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8001/shop/items",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8001",
+					"path": [
+						"shop",
+						"items"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post Purchase",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"userId\": \"e6a51b6e-7b6d-41e1-8c8f-dc1c1c3d6b11\",\r\n  \"itemId\": \"996c4899-4efd-4af8-9651-aa0406c0b0e8\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8001/shop/purchase",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8001",
+					"path": [
+						"shop",
+						"purchase"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -1,0 +1,80 @@
+{
+	"info": {
+		"_postman_id": "cee8a04b-4afe-4478-8451-eb9cc2d195ed",
+		"name": "Journal Service Collection",
+		"description": "Requests for testing Journal Service endpoints (CRUD).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48647628",
+		"_collection_link": "https://andreeaburdui-5897396.postman.co/workspace/andreeaburdui's-Workspace~2b17c17c-9392-48b4-8b4e-f676da439bb9/collection/48647628-cee8a04b-4afe-4478-8451-eb9cc2d195ed?action=share&source=collection_link&creator=48647628"
+	},
+	"item": [
+		{
+			"name": "Create Journal",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"difficulty\": \"amateur\",\r\n  \"userId\": \"550e8400-e29b-41d4-a716-446655440000\",\r\n  \"locationName\": \"MightyTree\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8001/journal/investigations",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8001",
+					"path": [
+						"journal",
+						"investigations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Request Investigation",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8001/journal/investigations/e1a2552b-1ebb-431c-a849-4da99bcd6a90",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8001",
+					"path": [
+						"journal",
+						"investigations",
+						"e1a2552b-1ebb-431c-a849-4da99bcd6a90"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
