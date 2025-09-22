@@ -192,68 +192,125 @@ The service offers detailed post-game analysis options enabling players to contr
 
 **Independence:** Isolated recording system with own data storage
 
-
-
 ---
 
 ### 5. Lobby Service
 
-The Lobby Service coordinates game sessions and oversees essential gameplay state data. This service establishes and oversees ongoing game sessions, monitoring crucial player conditions such as sanity levels and death status during matches. It manages the intricate logic of item allocation, monitoring which player possesses which items at any moment. 
+The Lobby Service coordinates game sessions and oversees essential gameplay state data. This service establishes and oversees ongoing game sessions, monitoring crucial player conditions such as sanity levels and death status during matches. It manages the intricate logic of item allocation, monitoring which player possesses which items at any moment via the `CurrentHolderId` field in items, which tracks the current holder, and `OwnerId` for initial ownership.
 
-The service also handles adjustments for difficulty levels and determines map choices and ghost type allocations for every game session. All data specific to the session, such as ongoing games, player statuses, and assigned items, is handled by the lobby's dedicated persistence layer, guaranteeing game integrity and uniform state management.
+The service also handles adjustments for difficulty levels and determines map choices and ghost type allocations for every game session. All data specific to the session, such as ongoing games, player statuses (including sanity and death tracking via dedicated endpoints), and assigned items, is handled by the lobby's dedicated persistence layer, guaranteeing game integrity and uniform state management.
+
+To address integration with other services like GhostAI, the service provides endpoints for monitoring and updating player states (e.g., sanity levels and death status through Participant CRUD operations). Information about objects held by players is accessible via Item endpoints, which include holder tracking. For communication of ghost activity to players, the service assumes event consumption through a message broker (e.g., RabbitMQ or Kafka). Events are published in the following JSON format:
+
+```json
+{
+  "eventType": "GhostActivity",
+  "sessionId": 123,
+  "ghostType": "Poltergeist",
+  "activityDetails": {
+    "location": "Room 5",
+    "action": "ObjectThrown",
+    "affectedPlayerId": 456,
+    "timestamp": "2025-09-22T14:30:00Z"
+  }
+}
+```
+
+This format includes the event type, session context, ghost specifics, and activity details for real-time updates to players or other services.
 
 **Responsibility:** Game session coordination and state management
 
 **Core Functions:**
+- Game session creation and management (via `/api/gamesessions` endpoints for CRUD)
+- Player sanity level tracking (via Participant `Sanity` field, updatable through `/api/participants/{id}` PUT)
+- Death status monitoring (via Participant `IsDead` field, updatable through `/api/participants/{id}` PUT)
+- Item distribution and holder tracking (via Item `CurrentHolderId` and `OwnerId`, managed through `/api/items` CRUD)
+- Difficulty level management (via `/api/difficulties` CRUD, linked to sessions)
+- Map and ghost type assignment (via GameSession `MapId` and `GhostType`, set during session creation/update)
+- Ghost activity event publishing (via message broker with defined JSON format)
 
-- Game session creation and management
+**Endpoints Summary:**
 
-- Player sanity level tracking
+| Method | Endpoint                  | Description                          |
+|--------|---------------------------|--------------------------------------|
+| GET    | `/api/gamesessions`       | Get all game sessions                |
+| GET    | `/api/gamesessions/{id}`  | Get session by ID                    |
+| POST   | `/api/gamesessions`       | Create new session                   |
+| PUT    | `/api/gamesessions/{id}`  | Update session                       |
+| DELETE | `/api/gamesessions/{id}`  | Delete session                       |
+| GET    | `/api/difficulties`       | Get all difficulties                 |
+| ...    | ...                       | (Similar for ghosts, items, participants) |
 
-- Death status monitoring
-
-- Item distribution and holder tracking
-
-- Difficulty level management
-
-- Map and ghost type assignment
+**Models:**
+- **GameSession:** Includes Difficulty, Participants, Items, GhostType, MapId.
+- **Difficulty:** Id, Name.
+- **Ghost:** Id, Name.
+- **Item:** Id, Name, OwnerId, CurrentHolderId.
+- **Participant:** Id, Name, Sanity, IsDead.
 
 **Data Owned:** Active game sessions, player states, item assignments
-
 **Independence:** Session-specific data management with own persistence layer
-
-
 
 ---
 
-
 ### 6. Map Service
 
-The Map Service manages every element of dynamic environment generation and maintenance in our game universe. This service offers extensive instruments for designing homes and distinct areas, overseeing the interactions between various rooms, and positioning items within the setting. A significant aspect is the capability to randomize object locations and assign concealment spots, resulting in diverse experiences even on well-known maps. 
+The Map Service manages every element of dynamic environment generation and maintenance in our game universe. This service offers extensive instruments for designing homes and distinct areas, overseeing the interactions between various rooms, and positioning items within the setting. A significant aspect is the capability to randomize object locations and assign concealment spots (via the `IsHiding` flag on objects), resulting in diverse experiences even on well-known maps.
 
-The service enables custom map creation, facilitating distinctive designs and setups. All data related to maps, such as layout designs, room arrangements, and algorithms for placing objects, are stored in the service's internal database and generation systems.
+The service enables custom map creation, facilitating distinctive designs and setups through full CRUD operations on houses, rooms, and objects. Maps can be created dynamically, with rooms connected to houses and objects placed within rooms. To provide imperative information for services like Location and GhostAI, endpoints expose details on existing rooms (including their IDs and associated objects) and hiding places (objects where `IsHiding` is true). All data related to maps, such as layout designs, room arrangements, and algorithms for placing objects, are stored in the service's internal database and generation systems.
+
+For map layouts, inputs and outputs use a structured JSON format representing the hierarchy:
+```json
+{
+  "id": 1,
+  "name": "Haunted Mansion",
+  "rooms": [
+    {
+      "id": 101,
+      "houseId": 1,
+      "objects": [
+        {
+          "id": 201,
+          "name": "Vase",
+          "isHiding": true,
+          "roomId": 101
+        }
+      ]
+    }
+  ]
+}
+```
+This format ensures clear expectations: Houses contain Rooms (via `HouseId` foreign key), and Rooms contain Objects (via `RoomId` foreign key, with `IsHiding` indicating potential ghost hiding spots).
 
 **Responsibility:** Dynamic environment creation and management
 
-
 **Core Functions:**
+- House and room creation tools (via `/api/houses` and `/api/rooms` POST for creation, with nested structures supported)
+- Room connectivity management (rooms linked to houses via `HouseId`)
+- Object placement and shuffling (via `/api/objects` CRUD, including randomization logic in service if needed)
+- Hiding place designation (via Object `IsHiding` flag, queryable through endpoints)
+- Custom map generation (full CRUD on all entities, allowing dynamic map building and fetching with room/hiding details)
 
-- House and room creation tools
+**Endpoints Summary:**
 
-- Room connectivity management
+| Method | Endpoint              | Description                          |
+|--------|-----------------------|--------------------------------------|
+| GET    | `/api/houses`         | Get all houses (with rooms/objects)  |
+| GET    | `/api/houses/{id}`    | Get house by ID                      |
+| POST   | `/api/houses`         | Create new house                     |
+| PUT    | `/api/houses/{id}`    | Update house                         |
+| DELETE | `/api/houses/{id}`    | Delete house                         |
+| GET    | `/api/rooms`          | Get all rooms (with objects)         |
+| ...    | ...                   | (Similar for objects)                |
 
-- Object placement and shuffling
-
-- Hiding place designation
-
-- Custom map generation
-
+**Models:**
+- **House:** Id, Name, Rooms (list).
+- **Room:** Id, HouseId, Objects (list).
+- **Object:** Id, Name, IsHiding, RoomId.
 
 **Data Owned:** Map layouts, room configurations, object placements
 
 **Independence:** Self-contained map data with generation algorithms
-
-
 ---
 
 ### 7. Ghost Service
