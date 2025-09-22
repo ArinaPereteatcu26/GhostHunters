@@ -1,12 +1,30 @@
+-- 001_schema.sql  (MySQL 8)
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS objects (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
-  quantity INT NOT NULL DEFAULT 0,
+  description TEXT,
+  max_durability INT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- optional seed data
-INSERT INTO objects (name, quantity) VALUES
-  ('Torch', 10),
-  ('Salt', 25),
-  ('EMF Reader', 5);
+CREATE TABLE IF NOT EXISTS ownerships (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  object_id INT NOT NULL,
+  purchased_at DATETIME NOT NULL,
+  price DECIMAL(10,2) NOT NULL,
+  durability_remaining INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_ownerships_user
+    FOREIGN KEY (user_id) REFERENCES users(id)
+    ON DELETE CASCADE,
+  CONSTRAINT fk_ownerships_object
+    FOREIGN KEY (object_id) REFERENCES objects(id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
