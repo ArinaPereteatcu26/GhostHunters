@@ -748,7 +748,7 @@ Each service is **self-contained with its own database**, following the **Databa
 
 - **Databases:**
     - User Management: SQL (users, friends)
-    - Ghost AI: Redis (fast ghost state updates per lobby)
+    - Ghost AI: Redis (fast ghost state updates per lobby and ghost locations), SQL(logs ghost behavior and state history for analysis)
     - Shop: SQL (items, prices, price history)
     - Journal: SQL (user records, ghost observations)
     - Lobby: SQL (sessions, player states, items, ghost type, map)
