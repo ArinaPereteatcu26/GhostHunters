@@ -1,0 +1,127 @@
+version: "3.8"
+
+services:
+  # --- MySQL for Inventory ---
+  db_inventory:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${INV_MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${INV_DB}
+      MYSQL_USER: ${INV_DB_USER}
+      MYSQL_PASSWORD: ${INV_DB_PASSWORD}
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${INV_MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    volumes:
+      - inv_mysql_data:/var/lib/mysql
+      - ./db/inventory.sql:/docker-entrypoint-initdb.d/001_inventory.sql:ro
+    # (No host port needed; app talks over internal network)
+
+  inventory:
+    image: ${INV_IMAGE}     # e.g., dgliga/inventory-service:6
+    environment:
+      DATABASE_URL: "mysql+pymysql://${INV_DB_USER}:${INV_DB_PASSWORD}@db_inventory:3306/${INV_DB}?charset=utf8mb4"
+      SEED_TOKEN: ${INV_SEED_TOKEN}
+    depends_on:
+      db_inventory:
+        condition: service_healthy
+    ports:
+      - "8000:8000"         # Inventory API on http://localhost:8000
+    restart: unless-stopped
+
+  # --- MySQL for Chat ---
+  db_chat:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${CHAT_MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${CHAT_DB}
+      MYSQL_USER: ${CHAT_DB_USER}
+      MYSQL_PASSWORD: ${CHAT_DB_PASSWORD}
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${CHAT_MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    volumes:
+      - chat_mysql_data:/var/lib/mysql
+      - ./db/chat.sql:/docker-entrypoint-initdb.d/001_chat.sql:ro
+
+  chat:
+    image: ${CHAT_IMAGE}    # e.g., dgliga/chat-service:4
+    environment:
+      DATABASE_URL: "mysql+pymysql://${CHAT_DB_USER}:${CHAT_DB_PASSWORD}@db_chat:3306/${CHAT_DB}?charset=utf8mb4"
+      SEED_TOKEN: ${CHAT_SEED_TOKEN}
+    depends_on:
+      db_chat:
+        condition: service_healthy
+    ports:
+      - "8001:8000"         # Chat API on http://localhost:8001
+    restart: unless-stopped
+
+    # --- Postgres for Ghost Service ---
+  ghost_postgres:
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/ghosts.sql:/docker-entrypoint-initdb.d/001_ghosts.sql:ro
+
+  ghost-service:
+    image: ${GHOST_IMAGE}
+    env_file:
+      - .env
+    ports:
+      - "4001:4001"
+    depends_on:
+      ghost_postgres:
+        condition: service_healthy
+
+  # --- Redis for Location Service ---
+  location_redis:
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    image: redis:7-alpine
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+  location-service:
+    image: ${LOCATION_IMAGE}
+    env_file:
+      - .env
+    ports:
+      - "4002:4002"
+    depends_on:
+      location_redis:
+        condition: service_healthy
+
+volumes:
+  inv_mysql_data:
+  chat_mysql_data:
+  pgdata:
+  redisdata:

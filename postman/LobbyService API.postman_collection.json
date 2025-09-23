@@ -1,0 +1,663 @@
+{
+	"info": {
+		"_postman_id": "2d03a53f-01c1-4d87-a50e-be2140683681",
+		"name": "LobbyService API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "24063280"
+	},
+	"item": [
+		{
+			"name": "GetAllGameSessions",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5144/api/gamesessions",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"gamesessions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetGameSessionById",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5144/api/gamesessions/{id}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"gamesessions",
+						"{id}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateGameSession",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"id\": 0,\n  \"difficulty\": { \"id\": 1, \"name\": \"Hard\" },\n  \"participants\": [{ \"id\": 1, \"name\": \"Player1\", \"sanity\": 80, \"isDead\": false }],\n  \"items\": [{ \"id\": 1, \"name\": \"Flashlight\", \"ownerId\": 1, \"currentHolderId\": 1 }],\n  \"ghostType\": { \"id\": 1, \"name\": \"Poltergeist\" },\n  \"mapId\": 42\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5144/api/gamesessions",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"gamesessions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateGameSession",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"id\": 1,\n  \"difficulty\": { \"id\": 2, \"name\": \"Easy\" },\n  \"mapId\": 43\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5144/api/gamesessions/{id}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"gamesessions",
+						"{id}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteGameSession",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5144/api/gamesessions/{id}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"gamesessions",
+						"{id}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetAllDifficulties",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5144/api/difficulties",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"difficulties"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetDifficultyById",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5144/api/difficulties/{id}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"difficulties",
+						"{id}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateDifficulty",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"id\": 0, \"name\": \"Medium\" }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5144/api/difficulties",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"difficulties"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateDifficulty",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"id\": 1, \"name\": \"Very Hard\" }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5144/api/difficulties/{id}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"difficulties",
+						"{id}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteDifficulty",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5144/api/difficulties/{id}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"difficulties",
+						"{id}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetAllGhosts",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5144/api/ghosts",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"ghosts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetGhostById",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5144/api/ghosts/{id}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"ghosts",
+						"{id}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateGhost",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"id\": 0, \"name\": \"Banshee\" }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5144/api/ghosts",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"ghosts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateGhost",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"id\": 1, \"name\": \"Phantom\" }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5144/api/ghosts/{id}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"ghosts",
+						"{id}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteGhost",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5144/api/ghosts/{id}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"ghosts",
+						"{id}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetAllItems",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5144/api/items",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"items"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetItemById",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5144/api/items/{id}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"items",
+						"{id}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateItem",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"id\": 0, \"name\": \"Candle\", \"ownerId\": 1, \"currentHolderId\": 1 }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5144/api/items",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"items"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateItem",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"id\": 1, \"name\": \"Candle\", \"ownerId\": 2, \"currentHolderId\": 2 }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5144/api/items/{id}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"items",
+						"{id}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteItem",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5144/api/items/{id}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"items",
+						"{id}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetAllParticipants",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5144/api/participants",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"participants"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateParticipant",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"id\": 0, \"name\": \"Player2\", \"sanity\": 90, \"isDead\": false }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5144/api/participants",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"participants"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateParticipant",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"id\": 1, \"name\": \"Player2\", \"sanity\": 50, \"isDead\": true }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5144/api/participants/{id}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"participants",
+						"{id}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteParticipant",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5144/api/participants/{id}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5144",
+					"path": [
+						"api",
+						"participants",
+						"{id}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

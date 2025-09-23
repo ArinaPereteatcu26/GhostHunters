@@ -1,0 +1,30 @@
+{
+  "info": {
+    "name": "Location Service",
+    "_postman_id": "location_service",
+    "description": "Postman collection for Location Service.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Update Player Location",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"Katrincik\",\n  \"coordinates\": { \"x\": 12.5, \"y\": 7.8, \"z\": 3.2 },\n  \"room\": \"library\",\n  \"item\": \"book\",\n  \"status\": { \"alone\": false, \"speaking\": true, \"hiding\": false }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:4002/locations",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "4002",
+          "path": ["locations"]
+        }
+      }
+    }
+  ]
+}
