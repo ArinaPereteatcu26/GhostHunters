@@ -208,7 +208,62 @@ services:
       DB_CONNECTION_STRING: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       REDIS_CONNECTION_STRING: "redis:6381"  
     
-    
+  # --- Azure SQL Edge for Lobby Service ---
+  lobby_sqlserver:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${LOBBY_SA_PASSWORD}
+    ports:
+      - "${LOBBY_DB_PORT}:1433"
+    volumes:
+      - lobby_sqlserver_data:/var/opt/mssql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P ${LOBBY_SA_PASSWORD} -Q 'SELECT 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  lobbyservice:
+    image: zagorodniuchka/lobbyservice:1.0
+    ports:
+      - "5144:80"
+    depends_on:
+      lobby_sqlserver:
+        condition: service_healthy
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=lobby_sqlserver;Database=${LOBBY_DB_NAME};User Id=${LOBBY_DB_USER};Password=${LOBBY_SA_PASSWORD}
+
+  # --- Azure SQL Edge for Map Service ---
+  map_sqlserver:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${MAP_SA_PASSWORD}
+    ports:
+      - "${MAP_DB_PORT}:1433"
+    volumes:
+      - map_sqlserver_data:/var/opt/mssql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P ${MAP_SA_PASSWORD} -Q 'SELECT 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mapservice:
+    image: zagorodniuchka/mapservice:1.0
+    ports:
+      - "5035:80"
+    depends_on:
+      map_sqlserver:
+        condition: service_healthy
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=map_sqlserver;Database=${MAP_DB_NAME};User Id=${MAP_DB_USER};Password=${MAP_SA_PASSWORD}
+    volumes:
+      - ./init.sql:/app/init.sql
     
 volumes:
   inv_mysql_data:
@@ -218,13 +273,17 @@ volumes:
   postgres_data:
   postgres_ghost_data:
   redis_data:
+  lobby_sqlserver_data:
+  map_sqlserver_data:
     
 networks:
   usermanagement_network:
     driver: bridge
 
-volumes:
-  inv_mysql_data:
-  chat_mysql_data:
-  pgdata:
-  redisdata:
+
+
+
+  
+
+
+
