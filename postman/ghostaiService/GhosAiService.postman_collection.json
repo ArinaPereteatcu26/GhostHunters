@@ -1,0 +1,280 @@
+{
+	"info": {
+		"_postman_id": "8cfa1279-c6e8-4ae5-a07c-a15c977df354",
+		"name": "GhosAiService",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30102624",
+		"_collection_link": "https://www.postman.com/arina8/workspace/ghostaiservice/collection/30102624-8cfa1279-c6e8-4ae5-a07c-a15c977df354?action=share&source=collection_link&creator=30102624"
+	},
+	"item": [
+		{
+			"name": "GhostManagement",
+			"item": [
+				{
+					"name": "Get all ghosts",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/ghosts/lobby/{{lobbyId}}",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"ghosts",
+								"lobby",
+								"{{lobbyId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get ghost by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/ghosts/1",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"ghosts",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create new ghost",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"LobbyId\": \"{{lobbyId}}\",\r\n  \"Name\": \"Ghost_Spooky_001\",\r\n  \"GhostType\": \"Poltergeist\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/ghosts",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"ghosts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update ghost",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"currentState\": \"ATTACKING\",\r\n  \"aggressionLevel\": 5,\r\n  \"currentRoom\": \"Kitchen\",\r\n  \"sanityThreshold\": 25,\r\n  \"isActive\": true\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/ghosts/1",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"ghosts",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete ghost",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}} /api/ghosts{id}",
+							"host": [
+								"{{baseUrl}} "
+							],
+							"path": [
+								"api",
+								"ghosts{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Ghost Decision",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"lobbyId\": \"1\",\r\n    \"players\": [\r\n        {\r\n            \"playerId\": \"2\",\r\n            \"sanityLevel\": 80,\r\n            \"currentRoom\": \"Hall\",\r\n            \"isAlive\": true\r\n        }\r\n    ],\r\n    \"difficulty\": \"Medium\",\r\n    \"availableRooms\": [\"Hall\", \"Kitchen\", \"Basement\"],\r\n    \"objects\": [\r\n        {\r\n            \"objectId\": \"door1\",\r\n            \"room\": \"Kitchen\",\r\n            \"canInteract\": true\r\n        }\r\n    ],\r\n    \"lastUpdated\": \"2025-09-23T11:00:00Z\"\r\n}\r\n"
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/ghosts/1/decision",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"ghosts",
+								"1",
+								"decision"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Game State",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"lobbyId\": \"1\",\r\n    \"players\": [\r\n        {\r\n            \"playerId\": \"2\",\r\n            \"sanityLevel\": 80,\r\n            \"currentRoom\": \"Hall\",\r\n            \"isAlive\": true\r\n        }\r\n    ],\r\n    \"difficulty\": \"Medium\",\r\n    \"availableRooms\": [\"Hall\", \"Kitchen\", \"Basement\"],\r\n    \"objects\": [\r\n        {\r\n            \"objectId\": \"door1\",\r\n            \"room\": \"Kitchen\",\r\n            \"canInteract\": true\r\n        }\r\n    ],\r\n    \"lastUpdated\": \"2025-09-23T11:00:00Z\"\r\n}\r\n"
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/gamestate/update",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"gamestate",
+								"update"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "host",
+			"value": "",
+			"description": "API host"
+		},
+		{
+			"key": "port",
+			"value": "",
+			"description": "API port"
+		},
+		{
+			"key": "lobbyId",
+			"value": "",
+			"description": "Default lobby ID"
+		},
+		{
+			"value": ""
+		}
+	]
+}
