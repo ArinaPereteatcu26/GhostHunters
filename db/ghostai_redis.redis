@@ -1,0 +1,55 @@
+FLUSHALL
+
+
+HMSET lobby:1 id 1 game_lobby_id "LOBBY123" map_name "Haunted Mansion" difficulty "Professional" player_count 4 average_sanity 100 is_active true
+HMSET lobby:2 id 2 game_lobby_id "LOBBY456" map_name "Abandoned Hospital" difficulty "Nightmare" player_count 3 average_sanity 90 is_active true
+SADD lobby_ids 1 2
+
+
+HMSET room:1 id 1 lobby_id 1 name "Living Room" is_active true
+HMSET room:2 id 2 lobby_id 1 name "Kitchen" is_active true
+HMSET room:3 id 3 lobby_id 1 name "Basement" is_active true
+SADD room_ids:1 1 2 3
+
+HMSET room:4 id 4 lobby_id 2 name "Emergency Room" is_active true
+HMSET room:5 id 5 lobby_id 2 name "Operating Theater" is_active true
+SADD room_ids:2 4 5
+
+
+HMSET ghost:1 id 1 name "The Mansion Keeper" type "Poltergeist" lobby_id 1 current_state "HIDING" aggression_level 3 current_room "Living Room" sanity_threshold 50 is_active true
+HMSET ghost:2 id 2 name "Dr. Shadows" type "Phantom" lobby_id 2 current_state "STALKING" aggression_level 2 current_room "Emergency Room" sanity_threshold 45 is_active true
+SADD ghost_ids:1 1
+SADD ghost_ids:2 2
+
+HMSET ghost_behavior:1 id 1 ghost_id 1 behavior_type "MoveToRoom" target_room "Kitchen" priority 1 trigger "Noise"
+HMSET ghost_behavior:2 id 2 ghost_id 1 behavior_type "InteractWithObject" target_room "Basement" priority 2 trigger "LowSanity"
+SADD ghost_behavior_ids:1 1 2
+
+HMSET ghost_behavior:3 id 3 ghost_id 2 behavior_type "EmitSound" target_room "Emergency Room" priority 2 trigger "LowSanity"
+HMSET ghost_behavior:4 id 4 ghost_id 2 behavior_type "AttackPlayer" target_room "Operating Theater" priority 1 trigger "PlayerDetected"
+SADD ghost_behavior_ids:2 3 4
+
+
+HMSET player:1 id 1 lobby_id 1 name "PlayerOne" sanity 95 is_alive true
+HMSET player:2 id 2 lobby_id 1 name "PlayerTwo" sanity 80 is_alive true
+SADD player_ids:1 1 2
+
+HMSET player:3 id 3 lobby_id 2 name "PlayerThree" sanity 40 is_alive true
+SADD player_ids:2 3
+
+
+HMSET ghost_action:1 id 1 ghost_id 1 action_type "Knock" target_room "Living Room" target_object "Door" target_player_id "PlayerOne"
+HMSET ghost_action:2 id 2 ghost_id 1 action_type "Throw" target_room "Kitchen" target_object "Plate"
+SADD ghost_action_ids:1 1 2
+
+HMSET ghost_action:3 id 3 ghost_id 2 action_type "Scream" target_room "Emergency Room" target_player_id "PlayerThree"
+SADD ghost_action_ids:2 3
+
+
+HMSET equipment:1 id 1 lobby_id 1 item_name "EMF Reader" is_used true
+HMSET equipment:2 id 2 lobby_id 1 item_name "Spirit Box" is_used false
+SADD equipment_ids:1 1 2
+
+HMSET equipment:3 id 3 lobby_id 2 item_name "UV Flashlight" is_used true
+HMSET equipment:4 id 4 lobby_id 2 item_name "Thermometer" is_used false
+SADD equipment_ids:2 3 4

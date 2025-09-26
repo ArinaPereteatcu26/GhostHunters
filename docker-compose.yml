@@ -1,6 +1,6 @@
 
 services:
-# --- MySQL for Inventory ---
+  # --- MySQL for Inventory ---
   db_inventory:
     image: mysql:8.0
     environment:
@@ -84,7 +84,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - ghost_pgdata:/var/lib/postgresql/data
       - ./db/ghosts.sql:/docker-entrypoint-initdb.d/001_ghosts.sql:ro
 
   ghost-service:
@@ -134,7 +134,8 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - usermanagement_pgdata:/var/lib/postgresql/data
+      - ./db/usermanagement.sql:/docker-entrypoint-initdb.d/001_usermanagement.sql:ro
     networks:
       - usermanagement_network
     healthcheck:
@@ -161,19 +162,19 @@ services:
     restart: unless-stopped
 
     # --- Postgres & Redis for GhostAi Service ---
-
   db_ghostai:
     image: postgres:15-alpine
     container_name: ghostai_postgres
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${GHOSTAI_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${GHOSTAI_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${GHOSTAI_POSTGRES_DB}
     ports:
       - "5434:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ghostai_pgdata:/var/lib/postgresql/data
+      - ./db/ghostai.sql:/docker-entrypoint-initdb.d/001_ghostai.sql:ro
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
       interval: 5s
@@ -208,68 +209,68 @@ services:
       redis:
         condition: service_healthy
     environment:
-      DB_CONNECTION_STRING: "Host=db_ghostai;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      DB_CONNECTION_STRING: "Host=db_ghostai;Port=5432;Database=${GHOSTAI_POSTGRES_DB};Username=${GHOSTAI_POSTGRES_USER};Password=${GHOSTAI_POSTGRES_PASSWORD}"
       REDIS_CONNECTION_STRING: "redis:6381"
 
   # --- Azure SQL Edge for Lobby Service ---
-  lobby_sqlserver:
-    image: mcr.microsoft.com/azure-sql-edge:latest
-    environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=${LOBBY_SA_PASSWORD}
-    ports:
-      - "${LOBBY_DB_PORT}:1433"
-    volumes:
-      - lobby_sqlserver_data:/var/opt/mssql
-      - ./db/lobbyservice.sql:/docker-entrypoint-initdb.d/lobbyservice.sql:ro
-    restart: unless-stopped
-    healthcheck:
-      test: [ "CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P ${LOBBY_SA_PASSWORD} -Q 'SELECT 1'" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-
-  lobbyservice:
-    image: ${LOBBY_IMAGE}
-    platform: linux/arm64
-    ports:
-      - "5144:80"
-    depends_on:
-      lobby_sqlserver:
-        condition: service_healthy
-    environment:
-      - ConnectionStrings__DefaultConnection=Server=lobby_sqlserver;Database=${LOBBY_DB_NAME};User Id=${LOBBY_DB_USER};Password=${LOBBY_SA_PASSWORD}
-
-  # --- Azure SQL Edge for Map Service ---
-  map_sqlserver:
-    image: mcr.microsoft.com/azure-sql-edge:latest
-    environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=${MAP_SA_PASSWORD}
-    ports:
-      - "${MAP_DB_PORT}:1433"
-    volumes:
-      - map_sqlserver_data:/var/opt/mssql
-      - ./db/map/mapservice.sql:/docker-entrypoint-initdb.d/mapservice.sql:ro
-    restart: unless-stopped
-    healthcheck:
-      test: [ "CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P ${MAP_SA_PASSWORD} -Q 'SELECT 1'" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-
-  mapservice:
-    image: ${MAP_IMAGE}
-    platform: linux/arm64
-    ports:
-      - "5035:80"
-    depends_on:
-      map_sqlserver:
-        condition: service_healthy
-    environment:
-      - ConnectionStrings__DefaultConnection=Server=map_sqlserver;Database=${MAP_DB_NAME};User Id=${MAP_DB_USER};Password=${MAP_SA_PASSWORD}
-    volumes:
-      - ./init.sql:/app/init.sql
+#  lobby_sqlserver:
+#    image: mcr.microsoft.com/azure-sql-edge:latest
+#    environment:
+#      - ACCEPT_EULA=Y
+#      - SA_PASSWORD=${LOBBY_SA_PASSWORD}
+#    ports:
+#      - "${LOBBY_DB_PORT}:1433"
+#    volumes:
+#      - lobby_sqlserver_data:/var/opt/mssql
+#      - ./db/lobbyservice.sql:/docker-entrypoint-initdb.d/lobbyservice.sql:ro
+#    restart: unless-stopped
+#    healthcheck:
+#      test: [ "CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P ${LOBBY_SA_PASSWORD} -Q 'SELECT 1'" ]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#
+#  lobbyservice:
+#    image: ${LOBBY_IMAGE}
+#    platform: linux/arm64
+#    ports:
+#      - "5144:80"
+#    depends_on:
+#      lobby_sqlserver:
+#        condition: service_healthy
+#    environment:
+#      - ConnectionStrings__DefaultConnection=Server=lobby_sqlserver;Database=${LOBBY_DB_NAME};User Id=${LOBBY_DB_USER};Password=${LOBBY_SA_PASSWORD}
+#
+#  # --- Azure SQL Edge for Map Service ---
+#  map_sqlserver:
+#    image: mcr.microsoft.com/azure-sql-edge:latest
+#    environment:
+#      - ACCEPT_EULA=Y
+#      - SA_PASSWORD=${MAP_SA_PASSWORD}
+#    ports:
+#      - "${MAP_DB_PORT}:1433"
+#    volumes:
+#      - map_sqlserver_data:/var/opt/mssql
+#      - ./db/map/mapservice.sql:/docker-entrypoint-initdb.d/mapservice.sql:ro
+#    restart: unless-stopped
+#    healthcheck:
+#      test: [ "CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P ${MAP_SA_PASSWORD} -Q 'SELECT 1'" ]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#
+#  mapservice:
+#    image: ${MAP_IMAGE}
+#    platform: linux/arm64
+#    ports:
+#      - "5035:80"
+#    depends_on:
+#      map_sqlserver:
+#        condition: service_healthy
+#    environment:
+#      - ConnectionStrings__DefaultConnection=Server=map_sqlserver;Database=${MAP_DB_NAME};User Id=${MAP_DB_USER};Password=${MAP_SA_PASSWORD}
+#    volumes:
+#      - ./init.sql:/app/init.sql
 
     # POSTGREQL for Journal service
   db_journal:
@@ -336,11 +337,11 @@ services:
 
 volumes:
   inv_mysql_data:
-  chat_mysql_data: 
-  pgdata:
+  chat_mysql_data:
+  ghost_pgdata:
   redisdata:
-  postgres_data:
-  postgres_ghost_data:
+  usermanagement_pgdata:
+  ghostai_pgdata:
   redis_data:
   lobby_sqlserver_data:
   map_sqlserver_data:
