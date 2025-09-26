@@ -323,6 +323,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+   
 
 volumes:
   inv_mysql_data:
