@@ -1,9 +1,38 @@
-﻿DO $$
+﻿-- ================================
+-- Create schema (tables)
+-- ================================
+
+CREATE TABLE IF NOT EXISTS "Users" (
+                                       "Id" SERIAL PRIMARY KEY,
+                                       "Email" TEXT NOT NULL UNIQUE,
+                                       "Username" TEXT NOT NULL UNIQUE,
+                                       "Password" TEXT NOT NULL,
+                                       "Level" INT DEFAULT 1,
+                                       "InGameCurrency" NUMERIC(12,2) DEFAULT 0,
+    "CreatedAt" TIMESTAMP DEFAULT NOW(),
+    "UpdatedAt" TIMESTAMP DEFAULT NOW()
+    );
+
+CREATE TABLE IF NOT EXISTS "Friendships" (
+                                             "Id" SERIAL PRIMARY KEY,
+                                             "RequesterId" INT NOT NULL REFERENCES "Users"("Id") ON DELETE CASCADE,
+    "ReceiverId" INT NOT NULL REFERENCES "Users"("Id") ON DELETE CASCADE,
+    "Status" TEXT NOT NULL,
+    "CreatedAt" TIMESTAMP DEFAULT NOW(),
+    "UpdatedAt" TIMESTAMP DEFAULT NOW()
+    );
+
+-- ================================
+-- Seed data (only if empty)
+-- ================================
+
+DO $$
 DECLARE
 user_count INTEGER;
     friendship_count INTEGER;
 BEGIN
 
+    -- Seed Users
 SELECT COUNT(*) INTO user_count FROM "Users";
 
 IF user_count = 0 THEN
@@ -23,7 +52,7 @@ ELSE
         RAISE NOTICE 'Users table already has data. Skipping user population.';
 END IF;
 
-    -- Check if Friendships table is empty
+    -- Seed Friendships
 SELECT COUNT(*) INTO friendship_count FROM "Friendships";
 
 IF friendship_count = 0 THEN
@@ -34,8 +63,8 @@ WITH user_ids AS (
 )
 INSERT INTO "Friendships" ("RequesterId", "ReceiverId", "Status", "CreatedAt", "UpdatedAt")
 SELECT
-    u1."Id" as "RequesterId",
-    u2."Id" as "ReceiverId",
+    u1."Id",
+    u2."Id",
     f.status,
     NOW(),
     NOW()
@@ -58,4 +87,3 @@ END IF;
 
     RAISE NOTICE 'Database population finished.';
 END $$;
- 
