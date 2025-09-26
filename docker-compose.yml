@@ -208,8 +208,123 @@ services:
       DB_CONNECTION_STRING: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       REDIS_CONNECTION_STRING: "redis:6381"  
     
+  # --- Azure SQL Edge for Lobby Service ---
+  lobby_sqlserver:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${LOBBY_SA_PASSWORD}
+    ports:
+      - "${LOBBY_DB_PORT}:1433"
+    volumes:
+      - lobby_sqlserver_data:/var/opt/mssql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P ${LOBBY_SA_PASSWORD} -Q 'SELECT 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  lobbyservice:
+    image: zagorodniuchka/lobbyservice:1.0
+    ports:
+      - "5144:80"
+    depends_on:
+      lobby_sqlserver:
+        condition: service_healthy
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=lobby_sqlserver;Database=${LOBBY_DB_NAME};User Id=${LOBBY_DB_USER};Password=${LOBBY_SA_PASSWORD}
+
+  # --- Azure SQL Edge for Map Service ---
+  map_sqlserver:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${MAP_SA_PASSWORD}
+    ports:
+      - "${MAP_DB_PORT}:1433"
+    volumes:
+      - map_sqlserver_data:/var/opt/mssql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P ${MAP_SA_PASSWORD} -Q 'SELECT 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mapservice:
+    image: zagorodniuchka/mapservice:1.0
+    ports:
+      - "5035:80"
+    depends_on:
+      map_sqlserver:
+        condition: service_healthy
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=map_sqlserver;Database=${MAP_DB_NAME};User Id=${MAP_DB_USER};Password=${MAP_SA_PASSWORD}
+    volumes:
+      - ./init.sql:/app/init.sql
     
+    # POSTGREQL for Journal service
+      db:
+    image: postgres:15
+    container_name: journal-db
+    environment:
+      POSTGRES_USER: ${JOURNAL_DB_USER}
+      POSTGRES_PASSWORD: ${JOURNAL_DB_PASSWORD}
+      POSTGRES_DB: ${JOURNAL_DB}
+    volumes:
+      - journal_data:/var/lib/postgresql/data
+    ports:
+      - "5436:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d journal_service"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    image: ${JOURNAL_IMAGE}
+    container_name: journal-service
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - .:/app
+    ports:
+      - "8003:8000"
+    depends_on:
+      - db
     
+    # POSTGREQL for Shop service
+    db:
+    image: postgres:15
+    container_name: shop-db
+    environment:
+      POSTGRES_USER: ${SHOP_DB_USER}
+      POSTGRES_PASSWORD: ${SHOP_DB_PASSWORD}
+      POSTGRES_DB: ${SHOP_DB}
+    volumes:
+      - shop_data:/var/lib/postgresql/data
+    ports:
+      - "5437:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d shop_service"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+     image: ${SHOP_IMAGE}
+    container_name: shop-service
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - .:/app
+    ports:
+      - "8002:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+   
+
 volumes:
   inv_mysql_data:
   chat_mysql_data: 
@@ -218,13 +333,17 @@ volumes:
   postgres_data:
   postgres_ghost_data:
   redis_data:
+  lobby_sqlserver_data:
+  map_sqlserver_data:
     
 networks:
   usermanagement_network:
     driver: bridge
 
-volumes:
-  inv_mysql_data:
-  chat_mysql_data:
-  pgdata:
-  redisdata:
+
+
+
+  
+
+
+

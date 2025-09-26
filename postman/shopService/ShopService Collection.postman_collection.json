@@ -25,12 +25,12 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8001/shop/items",
+					"raw": "http://localhost:8002/shop/items",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
-					"port": "8001",
+					"port": "8002",
 					"path": [
 						"shop",
 						"items"
@@ -46,7 +46,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"userId\": \"e6a51b6e-7b6d-41e1-8c8f-dc1c1c3d6b11\",\r\n  \"itemId\": \"996c4899-4efd-4af8-9651-aa0406c0b0e8\"\r\n}\r\n",
+					"raw": "{\r\n  \"userId\": 1,\r\n  \"itemId\": 1\r\n}\r\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -54,12 +54,12 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8001/shop/purchase",
+					"raw": "http://localhost:8002/shop/purchase",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
-					"port": "8001",
+					"port": "8002",
 					"path": [
 						"shop",
 						"purchase"
