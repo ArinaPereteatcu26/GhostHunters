@@ -15,7 +15,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"difficulty\": \"amateur\",\r\n  \"userId\": \"550e8400-e29b-41d4-a716-446655440000\",\r\n  \"locationName\": \"MightyTree\"\r\n}\r\n",
+					"raw": "{\r\n  \"userId\": 1,\r\n  \"locationName\": \"Old Mansion\",\r\n  \"difficulty\": \"intermediate\"\r\n}\r\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -23,15 +23,12 @@
 					}
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8001/journal/investigations",
+					"raw": "http://localhost:8003/journal/investigations",
 					"protocol": "http",
 					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
+						"localhost"
 					],
-					"port": "8001",
+					"port": "8003",
 					"path": [
 						"journal",
 						"investigations"
@@ -58,19 +55,16 @@
 					}
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8001/journal/investigations/e1a2552b-1ebb-431c-a849-4da99bcd6a90",
+					"raw": "http://localhost:8003/journal/investigations/1",
 					"protocol": "http",
 					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
+						"localhost"
 					],
-					"port": "8001",
+					"port": "8003",
 					"path": [
 						"journal",
 						"investigations",
-						"e1a2552b-1ebb-431c-a849-4da99bcd6a90"
+						"1"
 					]
 				}
 			},

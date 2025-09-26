@@ -264,14 +264,11 @@ services:
       - ConnectionStrings__DefaultConnection=Server=map_sqlserver;Database=${MAP_DB_NAME};User Id=${MAP_DB_USER};Password=${MAP_SA_PASSWORD}
     volumes:
       - ./init.sql:/app/init.sql
-
-
-    # --- Postgres for Shop Service ---
-
-  journal_db:
+    
+    # POSTGREQL for Journal service
+      db:
     image: postgres:15
     container_name: journal-db
-    restart: always
     environment:
       POSTGRES_USER: ${JOURNAL_DB_USER}
       POSTGRES_PASSWORD: ${JOURNAL_DB_PASSWORD}
@@ -281,29 +278,26 @@ services:
     ports:
       - "5436:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${JOURNAL_DB_USER} -d ${JOURNAL_DB}"]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready -U postgres -d journal_service"]
+      interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 5
 
-  journalservice:
+  web:
     image: ${JOURNAL_IMAGE}
     container_name: journal-service
-    restart: always
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - .:/app
     ports:
       - "8003:8000"
     depends_on:
-      journal_db:
-        condition: service_healthy
-    environment:
-      DB_CONNECTION_STRING: "Host=journal_db;Port=5432;Database=${JOURNAL_DB};Username=${JOURNAL_DB_USER};Password=${JOURNAL_DB_PASSWORD}"
-
-    # --- Postgres for Journal Service ---
-
-  shop_db:
+      - db
+    
+    # POSTGREQL for Shop service
+    db:
     image: postgres:15
     container_name: shop-db
-    restart: always
     environment:
       POSTGRES_USER: ${SHOP_DB_USER}
       POSTGRES_PASSWORD: ${SHOP_DB_PASSWORD}
@@ -313,23 +307,23 @@ services:
     ports:
       - "5437:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${SHOP_DB_USER} -d ${SHOP_DB}"]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready -U postgres -d shop_service"]
+      interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 5
 
-  shopservice:
-    image: ${SHOP_IMAGE}
+  web:
+     image: ${SHOP_IMAGE}
     container_name: shop-service
-    restart: always
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - .:/app
     ports:
       - "8002:8000"
     depends_on:
-      shop_db:
+      db:
         condition: service_healthy
-    environment:
-      DB_CONNECTION_STRING: "Host=shop_db;Port=5432;Database=${SHOP_DB};Username=${SHOP_DB_USER};Password=${SHOP_DB_PASSWORD}"
-    
+
 volumes:
   inv_mysql_data:
   chat_mysql_data: 
@@ -340,8 +334,6 @@ volumes:
   redis_data:
   lobby_sqlserver_data:
   map_sqlserver_data:
-  journal_data:
-  shop_data:
     
 networks:
   usermanagement_network:
