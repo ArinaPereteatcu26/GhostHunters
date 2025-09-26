@@ -1,6 +1,6 @@
 
 services:
-  # --- MySQL for Inventory ---
+# --- MySQL for Inventory ---
   db_inventory:
     image: mysql:8.0
     environment:
@@ -24,6 +24,7 @@ services:
 
   inventory:
     image: ${INV_IMAGE}     # e.g., dgliga/inventory-service:6
+    platform: linux/amd64
     environment:
       DATABASE_URL: "mysql+pymysql://${INV_DB_USER}:${INV_DB_PASSWORD}@db_inventory:3306/${INV_DB}?charset=utf8mb4"
       SEED_TOKEN: ${INV_SEED_TOKEN}
@@ -57,6 +58,7 @@ services:
 
   chat:
     image: ${CHAT_IMAGE}    # e.g., dgliga/chat-service:4
+    platform: linux/amd64
     environment:
       DATABASE_URL: "mysql+pymysql://${CHAT_DB_USER}:${CHAT_DB_PASSWORD}@db_chat:3306/${CHAT_DB}?charset=utf8mb4"
       SEED_TOKEN: ${CHAT_SEED_TOKEN}
@@ -87,6 +89,7 @@ services:
 
   ghost-service:
     image: ${GHOST_IMAGE}
+    platform: linux/amd64
     env_file:
       - .env
     ports:
@@ -111,6 +114,7 @@ services:
 
   location-service:
     image: ${LOCATION_IMAGE}
+    platform: linux/amd64
     env_file:
       - .env
     ports:
@@ -118,9 +122,6 @@ services:
     depends_on:
       location_redis:
         condition: service_healthy
-
-
-
 
   # --- Postgres for Usermanagement Service ---
   postgres:
@@ -141,9 +142,10 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      
+
   usermanagement-service:
     image: ${USERMANAGEMENT_IMAGE}
+    platform: linux/amd64
     container_name: usermanagement_service_main
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
@@ -157,19 +159,19 @@ services:
     networks:
       - usermanagement_network
     restart: unless-stopped
-    
+
     # --- Postgres & Redis for GhostAi Service ---
-    
-  db:
+
+  db_ghostai:
     image: postgres:15-alpine
-    container_name: ghost_postgres
+    container_name: ghostai_postgres
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -194,20 +196,21 @@ services:
 
   ghostaiservice:
     image: ${GHOSTAI_IMAGE}
+    platform: linux/amd64
     container_name: ghostaiservice_main
     restart: always
     ports:
       - "8083:8080"
       - "8084:8081"
     depends_on:
-      db:
+      db_ghostai:
         condition: service_healthy
       redis:
         condition: service_healthy
     environment:
-      DB_CONNECTION_STRING: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
-      REDIS_CONNECTION_STRING: "redis:6381"  
-    
+      DB_CONNECTION_STRING: "Host=db_ghostai;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      REDIS_CONNECTION_STRING: "redis:6381"
+
   # --- Azure SQL Edge for Lobby Service ---
   lobby_sqlserver:
     image: mcr.microsoft.com/azure-sql-edge:latest
@@ -218,15 +221,17 @@ services:
       - "${LOBBY_DB_PORT}:1433"
     volumes:
       - lobby_sqlserver_data:/var/opt/mssql
+      - ./db/lobbyservice.sql:/docker-entrypoint-initdb.d/lobbyservice.sql:ro
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P ${LOBBY_SA_PASSWORD} -Q 'SELECT 1'"]
+      test: [ "CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P ${LOBBY_SA_PASSWORD} -Q 'SELECT 1'" ]
       interval: 10s
       timeout: 5s
       retries: 10
 
   lobbyservice:
-    image: zagorodniuchka/lobbyservice:1.0
+    image: ${LOBBY_IMAGE}
+    platform: linux/arm64
     ports:
       - "5144:80"
     depends_on:
@@ -245,16 +250,17 @@ services:
       - "${MAP_DB_PORT}:1433"
     volumes:
       - map_sqlserver_data:/var/opt/mssql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./db/map/mapservice.sql:/docker-entrypoint-initdb.d/mapservice.sql:ro
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P ${MAP_SA_PASSWORD} -Q 'SELECT 1'"]
+      test: [ "CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P ${MAP_SA_PASSWORD} -Q 'SELECT 1'" ]
       interval: 10s
       timeout: 5s
       retries: 10
 
   mapservice:
-    image: zagorodniuchka/mapservice:1.0
+    image: ${MAP_IMAGE}
+    platform: linux/arm64
     ports:
       - "5035:80"
     depends_on:
@@ -264,9 +270,9 @@ services:
       - ConnectionStrings__DefaultConnection=Server=map_sqlserver;Database=${MAP_DB_NAME};User Id=${MAP_DB_USER};Password=${MAP_SA_PASSWORD}
     volumes:
       - ./init.sql:/app/init.sql
-    
+
     # POSTGREQL for Journal service
-      db:
+  db_journal:
     image: postgres:15
     container_name: journal-db
     environment:
@@ -275,6 +281,7 @@ services:
       POSTGRES_DB: ${JOURNAL_DB}
     volumes:
       - journal_data:/var/lib/postgresql/data
+      - ./db/journal.sql:/docker-entrypoint-initdb.d/journal.sql:ro
     ports:
       - "5436:5432"
     healthcheck:
@@ -283,8 +290,9 @@ services:
       timeout: 5s
       retries: 5
 
-  web:
+  web_journal:
     image: ${JOURNAL_IMAGE}
+    platform: linux/amd64
     container_name: journal-service
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
@@ -292,10 +300,10 @@ services:
     ports:
       - "8003:8000"
     depends_on:
-      - db
-    
+      - db_journal
+
     # POSTGREQL for Shop service
-    db:
+  db_shop:
     image: postgres:15
     container_name: shop-db
     environment:
@@ -304,6 +312,7 @@ services:
       POSTGRES_DB: ${SHOP_DB}
     volumes:
       - shop_data:/var/lib/postgresql/data
+      - ./db/shop.sql:/docker-entrypoint-initdb.d/init.sql:ro
     ports:
       - "5437:5432"
     healthcheck:
@@ -312,8 +321,9 @@ services:
       timeout: 5s
       retries: 5
 
-  web:
-     image: ${SHOP_IMAGE}
+  web_shop:
+    image: ${SHOP_IMAGE}
+    platform: linux/amd64
     container_name: shop-service
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
@@ -321,9 +331,8 @@ services:
     ports:
       - "8002:8000"
     depends_on:
-      db:
+      db_shop:
         condition: service_healthy
-   
 
 volumes:
   inv_mysql_data:
@@ -335,6 +344,8 @@ volumes:
   redis_data:
   lobby_sqlserver_data:
   map_sqlserver_data:
+  shop_data:
+  journal_data:
     
 networks:
   usermanagement_network:
