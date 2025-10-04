@@ -28,3 +28,27 @@ CREATE TABLE IF NOT EXISTS ownerships (
     FOREIGN KEY (object_id) REFERENCES objects(id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Insert Users
+INSERT INTO users (name)
+VALUES
+    ('Alice'),
+    ('Bob'),
+    ('Charlie');
+
+-- Insert Objects
+INSERT INTO objects (name, description, max_durability)
+VALUES
+    ('Flashlight', 'Helps explore dark areas', 100),
+    ('EMF Reader', 'Detects ghost electromagnetic activity', 80),
+    ('Camera', 'Captures ghost evidence', 120),
+    ('Radio', 'Communicate with other players', 150);
+
+-- Insert Ownerships (users buy objects)
+INSERT INTO ownerships (user_id, object_id, purchased_at, price, durability_remaining)
+VALUES
+    (1, 1, NOW(), 49.99, 95),   -- Alice bought a flashlight
+    (1, 2, NOW(), 99.99, 80),   -- Alice bought an EMF Reader
+    (2, 3, NOW(), 199.99, 115), -- Bob bought a Camera
+    (3, 4, NOW(), 79.99, 150),  -- Charlie bought a Radio
+    (3, 1, NOW(), 45.00, 90);   -- Charlie also bought a flashlight

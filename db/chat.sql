@@ -41,3 +41,38 @@ CREATE TABLE IF NOT EXISTS messages (
   CONSTRAINT fk_messages_room FOREIGN KEY (room_id)
     REFERENCES rooms(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Insert Users
+INSERT INTO users (name, has_radio)
+VALUES
+    ('Alice', TRUE),
+    ('Bob', FALSE),
+    ('Charlie', TRUE),
+    ('Diana', FALSE);
+
+-- Insert Rooms
+INSERT INTO rooms (name)
+VALUES
+    ('General'),
+    ('GhostHunters'),
+    ('RadioOnly');
+
+-- Insert Room Memberships
+INSERT INTO room_members (room_id, user_id)
+VALUES
+    (1, 1), -- Alice in General
+    (1, 2), -- Bob in General
+    (2, 3), -- Charlie in GhostHunters
+    (2, 4), -- Diana in GhostHunters
+    (3, 1), -- Alice in RadioOnly
+    (3, 3); -- Charlie in RadioOnly
+
+-- Insert Messages
+INSERT INTO messages (sender_id, recipient_id, room_id, content, timestamp)
+VALUES
+    (1, NULL, 1, 'Hello everyone, welcome to General!', NOW()),
+    (2, NULL, 1, 'Hi Alice, glad to be here!', NOW()),
+    (3, NULL, 2, 'Any ghost sightings today?', NOW()),
+    (4, NULL, 2, 'Not yet, but I have my tools ready!', NOW()),
+    (1, 3, NULL, 'Hey Charlie, want to test the radio?', NOW()),
+    (3, 1, 3, 'Sure, I hear you loud and clear on RadioOnly.', NOW());

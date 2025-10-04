@@ -4,6 +4,87 @@
 
 This document describes the service boundaries for a Phasmophobia clone game backend, designed to handle up to 4 million concurrent users through a microservices architecture.
 
+## Running Services
+
+### Requirements
+- Docker >= 20.x
+- Docker Compose >= 2.x
+- Environment variables:
+  - `USERMANAGEMENT_IMAGE`
+  - `GHOSTAI_IMAGE`
+  - `SHOP_IMAGE`
+  - `JOURNAL_IMAGE`
+  - `LOBBY_IMAGE`
+  - `MAP_IMAGE`
+  - `GHOST_IMAGE`
+  - `LOCATION_IMAGE`
+  - `INV_IMAGE`
+  - `CHAT_IMAGE`
+
+  - `INV_DB`, `INV_DB_USER`, `INV_DB_PASSWORD`, `INV_SEED_TOKEN`, `INV_MYSQL_ROOT_PASSWORD`
+  - `CHAT_DB`, `CHAT_DB_USER`, `CHAT_DB_PASSWORD`, `CHAT_SEED_TOKEN`, `CHAT_MYSQL_ROOT_PASSWORD`
+  - `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
+  - `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`
+  - `LOBBY_SA_PASSWORD`, `LOBBY_DB_NAME`, `LOBBY_DB_USER`, `LOBBY_DB_PORT`
+  - `MAP_SA_PASSWORD`, `MAP_DB_NAME`, `MAP_DB_USER`, `MAP_DB_PORT`
+  - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `ASPNETCORE_ENVIRONMENT`, `ASPNETCORE_URLS`
+  - `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
+  - `JOURNAL_DB_USER`, `JOURNAL_DB_PASSWORD`, `JOURNAL_DB`, `JOURNAL_DATABASE_URL`
+  - `SHOP_DB_USER`, `SHOP_DB_PASSWORD`, `SHOP_DB`, `SHOP_DATABASE_URL`
+
+
+### How to run
+```bash
+docker-compose up -d --build
+```
+
+### Accessing Services
+
+- User Management Service: http://localhost:5169
+- Ghost AI Service: http://localhost:8083 http://localhost:8084
+- Shop Service: http://localhost:8002
+- Journal Service: http://localhost:8003
+- Lobby: http://localhost:5144
+- Map: http://localhost:5035
+- Ghost Service: http://localhost:4001
+- Location Service: http://localhost:4002
+- Inventory Service: http://localhost:8000
+- Chat Service: http://localhost:8001
+
+## Services on Docker Hub
+
+You can find the Docker images for our services here:
+
+- **User Management Service:** [arinyan/usermanagement-service:v1.0](https://hub.docker.com/r/arinyan/usermanagement-service)
+- **Ghost AI Service:** [arinyan/ghostai-service:latest](https://hub.docker.com/r/arinyan/ghostai-service)
+
+- **Shop Service:** [aburdui/shop-service:1.0]
+(https://hub.docker.com/r/aburdui/shop-service)
+- **Journal Service:** [aburdui/journal-service:1.0]
+(https://hub.docker.com/r/aburdui/journal-service)
+
+- **Lobby Service:** [zagorodniuchka/lobbyservice:1.0](https://hub.docker.com/r/zagorodniuchka/lobbyservice)
+- **Map Service:** [zagorodniuchka/mapservice:1.0]
+(https://hub.docker.com/r/zagorodniuchka/mapservice)
+
+- **Ghost Service:** [katrincik123/ghost-service:1.0.0](https://hub.docker.com/r/katrincik123/ghost-service)
+- **Location Service:** [katrincik123/location-service:1.0.2](https://hub.docker.com/r/katrincik123/location-service)
+
+- **Inventory Service:** [dgliga/inventory-service:6](https://hub.docker.com/r/dgliga/inventory-service)
+- **Chat Service:** [dgliga/chat-service:4]
+(https://hub.docker.com/r/dgliga/chat-service)
+ 
+ 
+### Dependencies
+* **Databases:**
+   * MySQL 8.0 → Inventory, Chat
+   * PostgreSQL 15 → Ghost, GhostAI, Journal, Shop, Usermanagement
+   * Azure SQL Edge → Lobby, Map (commented out)
+* **Redis:** Location Service, GhostAI
+* **Message brokers / Other services:** None currently
+* **Service dependency order:** Most services wait for DB healthcheck via `depends_on: condition: service_healthy`
+
+
 ## Service Boundaries
 
 ### 1. User Management Service
@@ -1238,33 +1319,94 @@ Handles purchases, pricing, and transactions.
 
 ### Endpoints
 
-#### POST /shop/purchase
-
-**Request**
-```json
-{
-  "userId": "uuid",
-  "itemId": "uuid"
-}
-```
-**Response**
-```json
-{
-  "transactionId": "uuid",
-  "status": "success|failed",
-  "reason": "string|null"
-}
-```
 #### GET /shop/items
 **Response**
-```json
+
+```
 [
   {
-    "itemId": "uuid",
+    "itemId": "int",
     "name": "string",
-    "price": "int"
+    "price": "int",
+    "category": "string",
+    "description": "string",
+    "available": "bool"
   }
 ]
+```
+
+#### POST /shop/purchase
+**Request**
+
+```
+{
+  "userId": "int",
+  "itemId": "int"
+}
+```
+
+**Response**
+
+```
+{
+  "transactionId": "int",
+  "status": "string",
+  "reason": "string" // optional, if failed
+}
+```
+
+#### POST /shop/items
+**Request**
+
+```
+{
+  "name": "string",
+  "price": "int",
+  "category": "string",
+  "description": "string"
+}
+```
+
+**Response**
+
+```
+{
+  "itemId": "int",
+  "status": "string",
+  "message": "string"
+}
+```
+
+#### PUT /shop/items/{itemId}
+**Request**
+
+```
+{
+  "name": "string",        // optional
+  "price": "int",          // optional
+  "category": "string",    // optional
+  "description": "string", // optional
+  "available": "bool"      // optional
+}
+```
+
+**Response**
+
+```
+{
+  "status": "string",
+  "message": "string"
+}
+```
+
+#### DELETE /shop/items/{itemId}
+**Response**
+
+```
+{
+  "status": "string",
+  "message": "string"
+}
 ```
 
 ## Inventory Service
@@ -1685,23 +1827,282 @@ Manages ghost identification and scoring.
 
 ### Endpoints
 
-#### POST /journal/submit
-**Request**
-```json
+#### POST /journal/investigations
+**Description:** Create a new investigation  
+**Response:**
+
+```
 {
-  "userId": "uuid",
-  "lobbyId": "uuid",
-  "ghostType": "string"
+  "investigation_id": "int",
+  "user_id": "int",
+  "location_name": "string",
+  "difficulty": "string",
+  "status": "string",
+  "evidence": [],
+  "symptoms": [],
+  "ghost_analysis": null,
+  "final_guess": null,
+  "scoring": null,
+  "created_at": "datetime",
+  "updated_at": "datetime",
+  "completed_at": null
 }
 ```
-**Response**
-```json
+
+#### GET /journal/investigations/{investigationId}
+**Description:** Get details of a specific investigation  
+**Response:**
+
+```
 {
-  "status": "recorded",
-  "correct": "bool",
-  "reward": "int"
+  "investigation_id": "int",
+  "user_id": "int",
+  "location_name": "string",
+  "difficulty": "string",
+  "status": "string",
+  "evidence": [],
+  "symptoms": [],
+  "ghost_analysis": null,
+  "final_guess": null,
+  "scoring": null,
+  "created_at": "datetime",
+  "updated_at": "datetime",
+  "completed_at": null
 }
 ```
+
+#### PUT /journal/investigations/{investigationId}/status
+**Description:** Update the status of an investigation (completed or abandoned)  
+**Response:**
+
+```
+{
+  "status": "success",
+  "message": "Investigation completed",
+  "finalScore": "int | null"
+}
+```
+
+## Evidence
+
+#### POST /journal/investigations/{investigationId}/evidence
+**Description:** Add evidence to an investigation  
+**Response:**
+
+```
+{
+  "evidenceId": "int",
+  "status": "success",
+  "message": "Evidence added",
+  "ghostAnalysis": {}
+}
+```
+
+#### PUT /journal/investigations/{investigationId}/evidence/{evidenceId}
+**Description:** Update evidence information  
+**Response:**
+
+```
+{
+  "status": "success",
+  "message": "Evidence updated",
+  "ghostAnalysis": {}
+}
+```
+
+#### DELETE /journal/investigations/{investigationId}/evidence/{evidenceId}
+**Description:** Delete a piece of evidence  
+**Response:**
+
+```
+{
+  "status": "success",
+  "message": "Evidence deleted"
+}
+```
+
+## Symptoms
+
+#### POST /journal/investigations/{investigationId}/symptoms
+**Description:** Add a symptom to an investigation  
+**Response:**
+
+```
+{
+  "symptomId": "int",
+  "status": "success",
+  "message": "Symptom recorded"
+}
+```
+
+#### PUT /journal/investigations/{investigationId}/symptoms/{symptomId}
+**Description:** Update a symptom  
+**Response:**
+
+```
+{
+  "status": "success",
+  "message": "Symptom updated"
+}
+```
+
+#### DELETE /journal/investigations/{investigationId}/symptoms/{symptomId}
+**Description:** Delete a symptom  
+**Response:**
+
+```
+{
+  "status": "success",
+  "message": "Symptom deleted"
+}
+```
+
+#### GET /journal/investigations/{investigationId}/symptoms
+**Description:** List all symptoms of an investigation  
+**Response:**
+
+```
+{
+  "symptoms": [],
+  "timeline": []
+}
+```
+
+## Analysis & Guess
+
+#### GET /journal/investigations/{investigationId}/analysis
+**Description:** Get ghost analysis for the investigation  
+**Response:**
+
+```
+{
+  "possibleGhosts": [],
+  "eliminatedGhosts": [],
+  "confidence": "float",
+  "recommendation": "string",
+  "missingEvidence": []
+}
+```
+
+#### POST /journal/investigations/{investigationId}/guess
+**Description:** Submit a final guess for the ghost type  
+**Response:**
+
+```
+{
+  "status": "success",
+  "correct": "boolean",
+  "actualGhost": "string",
+  "scoring": {
+    "baseScore": "int",
+    "evidenceBonus": "int",
+    "timeBonus": "int",
+    "confidenceBonus": "int",
+    "difficultyMultiplier": "float",
+    "finalScore": "int"
+  },
+  "feedback": "string"
+}
+```
+
+#### GET /journal/investigations/{investigationId}/score
+**Description:** Get the current score and breakdown of an investigation  
+**Response:**
+
+```
+{
+  "currentScore": {
+    "baseScore": "int",
+    "evidenceBonus": "int",
+    "timeBonus": "int",
+    "difficultyMultiplier": "float",
+    "projectedScore": "int"
+  },
+  "scoreBreakdown": {
+    "evidenceFound": "int",
+    "symptomsRecorded": "int",
+    "timeElapsed": "int",
+    "difficultyLevel": "string"
+  }
+}
+```
+
+## User Journal
+
+#### GET /journal/users/{userId}/active
+**Description:** Get the currently active investigation of a user  
+**Response:**
+
+```
+{
+  "investigationId": "int",
+  "locationName": "string",
+  "difficulty": "string",
+  "progress": {
+    "evidenceCount": "int",
+    "symptomCount": "int",
+    "timeElapsed": "int",
+    "confidence": "float"
+  }
+}
+```
+
+#### GET /journal/users/{userId}/history
+**Description:** Get past investigations of a user  
+**Response:**
+
+```
+{
+  "investigations": [],
+  "stats": {
+    "totalInvestigations": "int",
+    "completedInvestigations": "int",
+    "successRate": "float",
+    "averageScore": "int",
+    "totalPlayTime": "int",
+    "favoriteLocation": "string",
+    "ghostTypeStats": {}
+  }
+}
+```
+
+#### GET /journal/users/{userId}/stats
+**Description:** Get detailed user statistics  
+**Response:**
+
+```
+{
+  "overallStats": {
+    "totalInvestigations": "int",
+    "successRate": "float",
+    "averageScore": "int",
+    "totalPlayTime": "int",
+    "rank": "string",
+    "level": "int"
+  },
+  "evidenceStats": {
+    "evidenceType": {
+      "found": "int",
+      "accuracy": "float"
+    }
+  },
+  "ghostTypeStats": {
+    "ghostType": {
+      "encountered": "int",
+      "correctGuesses": "int",
+      "accuracy": "float"
+    }
+  },
+  "locationStats": {
+    "locationName": {
+      "visits": "int",
+      "successRate": "float",
+      "averageScore": "int"
+    }
+  }
+}
+```
+
 ## Map Service
 Handles layout and environmental assets.
 **Database**   MongoDB
@@ -1857,5 +2258,11 @@ Examples:
 ### Versioning  
 - We follow **Semantic Versioning (SemVer)**: `MAJOR.MINOR.PATCH`.  
 - New releases are tagged in GitHub (e.g., `v1.0.0`).  
+
+
+## OS-specific Notes
+* Works on **Linux**, **Windows**, **Mac** with Docker Desktop
+* Some services (like Lobby / Map SQL Edge) may require **ARM64 vs AMD64 platforms**
+* Ensure **ports do not conflict** if running multiple services on the same machine
 
 
