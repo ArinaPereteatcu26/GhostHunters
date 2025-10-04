@@ -126,13 +126,13 @@ services:
   # --- Postgres for Usermanagement Service ---
   postgres:
     image: postgres:15-alpine
-    container_name: user_postgres
+    container_name: usermanagement_postgres_dev
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "5433:5432"
+      - "5435:5432"
     volumes:
       - usermanagement_pgdata:/var/lib/postgresql/data
       - ./db/usermanagement.sql:/docker-entrypoint-initdb.d/001_usermanagement.sql:ro
@@ -147,13 +147,13 @@ services:
   usermanagement-service:
     image: ${USERMANAGEMENT_IMAGE}
     platform: linux/amd64
-    container_name: usermanagement_service_main
+    container_name: usermanagement_service_dev
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       - ASPNETCORE_URLS=${ASPNETCORE_URLS}
       - ConnectionStrings__DefaultConnection=Host=${DB_HOST};Port=${DB_PORT};Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}
     ports:
-      - "5169:5169"
+      - "5170:5169"
     depends_on:
       postgres:
         condition: service_healthy
@@ -164,14 +164,14 @@ services:
     # --- Postgres & Redis for GhostAi Service ---
   db_ghostai:
     image: postgres:15-alpine
-    container_name: ghostai_postgres
+    container_name: ghostai_postgres_dev
     restart: always
     environment:
       POSTGRES_USER: ${GHOSTAI_POSTGRES_USER}
       POSTGRES_PASSWORD: ${GHOSTAI_POSTGRES_PASSWORD}
       POSTGRES_DB: ${GHOSTAI_POSTGRES_DB}
     ports:
-      - "5434:5432"
+      - "5438:5432"
     volumes:
       - ghostai_pgdata:/var/lib/postgresql/data
       - ./db/ghostai.sql:/docker-entrypoint-initdb.d/001_ghostai.sql:ro
@@ -183,10 +183,10 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: redis_ghostai
+    container_name: redis_ghostai_dev
     restart: always
     ports:
-      - "6381:6379"
+      - "6382:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -198,11 +198,11 @@ services:
   ghostaiservice:
     image: ${GHOSTAI_IMAGE}
     platform: linux/amd64
-    container_name: ghostaiservice_main
+    container_name: ghostai_service_dev
     restart: always
     ports:
-      - "8083:8080"
-      - "8084:8081"
+      - "8085:8080"
+      - "8086:8081"
     depends_on:
       db_ghostai:
         condition: service_healthy
