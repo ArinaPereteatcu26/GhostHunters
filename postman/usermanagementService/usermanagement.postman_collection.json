@@ -1,0 +1,621 @@
+{
+	"info": {
+		"_postman_id": "f32ba6ee-aca3-4d40-915f-22360422457c",
+		"name": "Comprehensive API testing for User Management Service with friend system",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30102624",
+		"_collection_link": "https://www.postman.com/arina8/workspace/chat/collection/30102624-f32ba6ee-aca3-4d40-915f-22360422457c?action=share&source=collection_link&creator=30102624"
+	},
+	"item": [
+		{
+			"name": "User Management",
+			"item": [
+				{
+					"name": "Positive Tests",
+					"item": [
+						{
+							"name": "Create User 1 - Valid Data",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"User created successfully\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response contains user data\", function () {\r",
+											"    const responseJson = pm.response.json();\r",
+											"    pm.expect(responseJson).to.have.property('id');\r",
+											"    pm.expect(responseJson).to.have.property('email');\r",
+											"    pm.expect(responseJson).to.have.property('username');\r",
+											"    pm.expect(responseJson.email).to.eql(pm.variables.get(\"testEmail1\"));\r",
+											"    pm.expect(responseJson.username).to.eql(\"testuser1\");\r",
+											"    \r",
+											"    pm.collectionVariables.set(\"user1Id\", responseJson.id);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"User has default values\", function () {\r",
+											"    const responseJson = pm.response.json();\r",
+											"    pm.expect(responseJson.level).to.eql(1);\r",
+											"    pm.expect(responseJson.inGameCurrency).to.eql(0);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response includes timestamps\", function () {\r",
+											"    const responseJson = pm.response.json();\r",
+											"    pm.expect(responseJson).to.have.property('createdAt');\r",
+											"    pm.expect(responseJson).to.have.property('updatedAt');\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"{{testEmail1}}\",\r\n    \"username\": \"testuser1\",\r\n    \"password\": \"password123\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create User 2 - Valid Data",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Second user created successfully\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Save user 2 ID\", function () {\r",
+											"    const responseJson = pm.response.json();\r",
+											"    pm.collectionVariables.set(\"user2Id\", responseJson.id);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"{{testEmail2}}\",\r\n    \"username\": \"testuser2\",\r\n    \"password\": \"password456\"\r\n}"
+								},
+								"url": {
+									"raw": "http://localhost:5169/api/users",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "5169",
+									"path": [
+										"api",
+										"users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get All Users",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Users retrieved successfully\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response is an array\", function () {\r",
+											"    const responseJson = pm.response.json();\r",
+											"    pm.expect(responseJson).to.be.an('array');\r",
+											"    pm.expect(responseJson.length).to.be.at.least(2);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Users contain required fields\", function () {\r",
+											"    const responseJson = pm.response.json();\r",
+											"    responseJson.forEach(user => {\r",
+											"        pm.expect(user).to.have.property('id');\r",
+											"        pm.expect(user).to.have.property('email');\r",
+											"        pm.expect(user).to.have.property('username');\r",
+											"        pm.expect(user).to.have.property('level');\r",
+											"        pm.expect(user).to.have.property('inGameCurrency');\r",
+											"    });\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:5169/api/users",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "5169",
+									"path": [
+										"api",
+										"users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get User By Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"User retrieved successfully\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Correct user returned\", function () {\r",
+											"    const responseJson = pm.response.json();\r",
+											"    pm.expect(responseJson.id).to.eql(parseInt(pm.collectionVariables.get(\"user1Id\")));\r",
+											"    pm.expect(responseJson.email).to.eql(pm.variables.get(\"testEmail1\"));\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:5169/api/users/1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "5169",
+									"path": [
+										"api",
+										"users",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update User",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"User updated successfully\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"level\": 5,\r\n    \"inGameCurrency\": 1500.75\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:5169/api/users/1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "5169",
+									"path": [
+										"api",
+										"users",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update User Currency",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Currency updated successfully\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"New balance returned\", function () {\r",
+											"    const responseJson = pm.response.json();\r",
+											"    pm.expect(responseJson).to.have.property('newBalance');\r",
+											"    pm.expect(responseJson.newBalance).to.be.a('number');\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "\r\n500.25",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:5169/api/users/1/currency",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "5169",
+									"path": [
+										"api",
+										"users",
+										"1",
+										"currency"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Friend System",
+			"item": [
+				{
+					"name": "Positive Tests",
+					"item": [
+						{
+							"name": "Send Friend Request",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Friend request sent successfully\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Success message returned\", function () {\r",
+											"    const responseJson = pm.response.json();\r",
+											"    pm.expect(responseJson.message.toLowerCase()).to.include('sent');\r",
+											"}); "
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"requesterId\": {{user1Id}},\r\n    \"receiverId\": {{user2Id}}\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:5169/api/friends/request",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "5169",
+									"path": [
+										"api",
+										"friends",
+										"request"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Pending Requests",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Pending requests retrieved\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Contains pending request\", function () {\r",
+											"    const responseJson = pm.response.json();\r",
+											"    pm.expect(responseJson).to.be.an('array');\r",
+											"    pm.expect(responseJson.length).to.be.at.least(1);\r",
+											"    \r",
+											"    // Save friendship ID for later tests\r",
+											"    if (responseJson.length > 0) {\r",
+											"        pm.collectionVariables.set(\"friendshipId\", responseJson[0].id);\r",
+											"    }\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Request contains correct user data\", function () {\r",
+											"    const responseJson = pm.response.json();\r",
+											"    if (responseJson.length > 0) {\r",
+											"        const request = responseJson[0];\r",
+											"        pm.expect(request.requester.id).to.eql(parseInt(pm.collectionVariables.get(\"user1Id\")));\r",
+											"        pm.expect(request.receiver.id).to.eql(parseInt(pm.collectionVariables.get(\"user2Id\")));\r",
+											"        pm.expect(request.status).to.eql(\"Pending\");\r",
+											"    }\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:5169/api/friends/{{user2Id}}/requests/pending",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "5169",
+									"path": [
+										"api",
+										"friends",
+										"{{user2Id}}",
+										"requests",
+										"pending"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Accept Friend Request",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Friend request accepted successfully\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Success message returned\", function () {\r",
+											"    const responseJson = pm.response.json();\r",
+											"    pm.expect(responseJson.message.toLowerCase()).to.include('accepted');\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:5169/api/friends/{{friendshipId}}/accept",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "5169",
+									"path": [
+										"api",
+										"friends",
+										"{{friendshipId}}",
+										"accept"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Friends",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Friends list retrieved\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Contains accepted friend\", function () {\r",
+											"    const responseJson = pm.response.json();\r",
+											"    pm.expect(responseJson).to.be.an('array');\r",
+											"    pm.expect(responseJson.length).to.be.at.least(1);\r",
+											"    \r",
+											"    const friend = responseJson.find(f => f.id === parseInt(pm.collectionVariables.get(\"user2Id\")));\r",
+											"    pm.expect(friend).to.not.be.undefined;\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:5169/api/friends/{{user1Id}}/friends",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "5169",
+									"path": [
+										"api",
+										"friends",
+										"{{user1Id}}",
+										"friends"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "",
+			"description": "Base URL for API"
+		},
+		{
+			"key": "user1Id",
+			"value": "",
+			"description": "ID of first test user"
+		},
+		{
+			"key": "user2Id",
+			"value": "",
+			"description": "ID of second test user"
+		},
+		{
+			"key": "user3Id",
+			"value": "",
+			"description": "ID of third test user"
+		},
+		{
+			"key": "friendshipId",
+			"value": "",
+			"description": "ID of friendship for testing"
+		},
+		{
+			"key": "testEmail1",
+			"value": "",
+			"description": "Test email 1"
+		},
+		{
+			"key": "testEmail2",
+			"value": "",
+			"description": "Test email 2"
+		},
+		{
+			"key": "testEmail3",
+			"value": "",
+			"description": "Test email 3"
+		}
+	]
+}
