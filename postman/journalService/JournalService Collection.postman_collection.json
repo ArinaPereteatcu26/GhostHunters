@@ -9,13 +9,13 @@
 	},
 	"item": [
 		{
-			"name": "Create Journal",
+			"name": "journal investigations",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"userId\": 1,\r\n  \"locationName\": \"Old Mansion\",\r\n  \"difficulty\": \"intermediate\"\r\n}\r\n",
+					"raw": "{\r\n  \"userId\": 1,\r\n  \"locationName\": \"Old Mansion\",\r\n  \"difficulty\": \"intermediate\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -38,22 +38,10 @@
 			"response": []
 		},
 		{
-			"name": "Request Investigation",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
+			"name": "get investigation",
 			"request": {
 				"method": "GET",
 				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
 				"url": {
 					"raw": "http://localhost:8003/journal/investigations/1",
 					"protocol": "http",
@@ -65,6 +53,372 @@
 						"journal",
 						"investigations",
 						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update investigation status",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"status\": \"completed\" }\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8003/journal/investigations/1/status",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8003",
+					"path": [
+						"journal",
+						"investigations",
+						"1",
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add evidence",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"evidenceType\": \"emf\",\r\n  \"status\": \"confirmed\",\r\n  \"notes\": \"High EMF near basement\",\r\n  \"confidence\": 85\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8003/journal/investigations/1/evidence",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8003",
+					"path": [
+						"journal",
+						"investigations",
+						"1",
+						"evidence"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update evidence",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"status\": \"confirmed\",\r\n  \"notes\": \"Confirmed after second test\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8003/journal/investigations/1/evidence/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8003",
+					"path": [
+						"journal",
+						"investigations",
+						"1",
+						"evidence",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete evidence",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8003/journal/investigations/1/evidence/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8003",
+					"path": [
+						"journal",
+						"investigations",
+						"1",
+						"evidence",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add symptom",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"type\": \"cold_spot\",\r\n  \"description\": \"Sudden temperature drop\",\r\n  \"severity\": \"medium\",\r\n  \"witnessedBy\": [\"Alice\", \"Bob\"]\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8003/journal/investigations/1/symptoms",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8003",
+					"path": [
+						"journal",
+						"investigations",
+						"1",
+						"symptoms"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update symptom",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"severity\": \"high\",\r\n  \"description\": \"Repeated cold spot in hallway\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8003/journal/investigations/1/symptoms/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8003",
+					"path": [
+						"journal",
+						"investigations",
+						"1",
+						"symptoms",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete symptom",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8003/journal/investigations/1/symptoms/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8003",
+					"path": [
+						"journal",
+						"investigations",
+						"1",
+						"symptoms",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "list symptoms",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8003/journal/investigations/1/symptoms",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8003",
+					"path": [
+						"journal",
+						"investigations",
+						"1",
+						"symptoms"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get analysis",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8003/journal/investigations/1/analysis",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8003",
+					"path": [
+						"journal",
+						"investigations",
+						"1",
+						"analysis"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "submit ghost guess",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"ghostType\": \"Poltergeist\",\r\n  \"confidence\": 80,\r\n  \"reasoning\": \"High EMF + orb sightings\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8003/journal/investigations/1/guess",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8003",
+					"path": [
+						"journal",
+						"investigations",
+						"1",
+						"guess"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get current score",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8003/journal/investigations/1/score",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8003",
+					"path": [
+						"journal",
+						"investigations",
+						"1",
+						"score"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get active investigation for user",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8003/journal/users/1/active",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8003",
+					"path": [
+						"journal",
+						"users",
+						"1",
+						"active"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get user investigation history",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8003/journal/users/1/history",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8003",
+					"path": [
+						"journal",
+						"users",
+						"1",
+						"history"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get user stats",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8003/journal/users/1/stats",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8003",
+					"path": [
+						"journal",
+						"users",
+						"1",
+						"stats"
 					]
 				}
 			},
