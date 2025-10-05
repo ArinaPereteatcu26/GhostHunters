@@ -226,115 +226,6 @@
 								}
 							},
 							"response": []
-						},
-						{
-							"name": "Update User",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"User updated successfully\", function () {\r",
-											"    pm.response.to.have.status(204);\r",
-											"});"
-										],
-										"type": "text/javascript",
-										"packages": {},
-										"requests": {}
-									}
-								}
-							],
-							"request": {
-								"method": "PUT",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"level\": 5,\r\n    \"inGameCurrency\": 1500.75\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "http://localhost:5169/api/users/1",
-									"protocol": "http",
-									"host": [
-										"localhost"
-									],
-									"port": "5169",
-									"path": [
-										"api",
-										"users",
-										"1"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Update User Currency",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Currency updated successfully\", function () {\r",
-											"    pm.response.to.have.status(200);\r",
-											"});\r",
-											"\r",
-											"pm.test(\"New balance returned\", function () {\r",
-											"    const responseJson = pm.response.json();\r",
-											"    pm.expect(responseJson).to.have.property('newBalance');\r",
-											"    pm.expect(responseJson.newBalance).to.be.a('number');\r",
-											"});"
-										],
-										"type": "text/javascript",
-										"packages": {},
-										"requests": {}
-									}
-								}
-							],
-							"request": {
-								"method": "PATCH",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "\r\n500.25",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "http://localhost:5169/api/users/1/currency",
-									"protocol": "http",
-									"host": [
-										"localhost"
-									],
-									"port": "5169",
-									"path": [
-										"api",
-										"users",
-										"1",
-										"currency"
-									]
-								}
-							},
-							"response": []
 						}
 					]
 				}
@@ -379,7 +270,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"requesterId\": {{user1Id}},\r\n    \"receiverId\": {{user2Id}}\r\n}",
+									"raw": "{\r\n  \"requesterId\": 9,\r\n  \"receiverId\": 10\r\n}\r\n",
 									"options": {
 										"raw": {
 											"language": "json"
