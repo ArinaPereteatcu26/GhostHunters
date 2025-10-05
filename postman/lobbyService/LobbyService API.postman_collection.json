@@ -27,30 +27,6 @@
 			"response": []
 		},
 		{
-			"name": "GetGameSessionById",
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:5144/api/gamesessions/{id}",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "5144",
-					"path": [
-						"api",
-						"gamesessions",
-						"{id}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "CreateGameSession",
 			"request": {
 				"auth": {
@@ -60,7 +36,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"id\": 0,\n  \"difficulty\": { \"id\": 1, \"name\": \"Hard\" },\n  \"participants\": [{ \"id\": 1, \"name\": \"Player1\", \"sanity\": 80, \"isDead\": false }],\n  \"items\": [{ \"id\": 1, \"name\": \"Flashlight\", \"ownerId\": 1, \"currentHolderId\": 1 }],\n  \"ghostType\": { \"id\": 1, \"name\": \"Poltergeist\" },\n  \"mapId\": 42\n}",
+					"raw": "{\n  \"difficultyId\": 1,\n  \"ghostId\": 2,\n  \"mapId\": 3,\n  \"participants\": [\n    {\n      \"name\": \"Alice\",\n      \"sanity\": 100,\n      \"isDead\": false\n    },\n    {\n      \"name\": \"Bob\",\n      \"sanity\": 95,\n      \"isDead\": false\n    }\n  ],\n  \"items\": [\n    {\n      \"name\": \"Crucifix\",\n      \"ownerId\": 1,\n      \"currentHolderId\": 1\n    }\n  ]\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -163,30 +139,6 @@
 			"response": []
 		},
 		{
-			"name": "GetDifficultyById",
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:5144/api/difficulties/{id}",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "5144",
-					"path": [
-						"api",
-						"difficulties",
-						"{id}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "CreateDifficulty",
 			"request": {
 				"auth": {
@@ -196,7 +148,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{ \"id\": 0, \"name\": \"Medium\" }",
+					"raw": "{\n  \"name\": \"Nightmare\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -228,7 +180,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{ \"id\": 1, \"name\": \"Very Hard\" }",
+					"raw": "{\n  \"id\": 1,\n  \"name\": \"Easy Mode\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -236,7 +188,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:5144/api/difficulties/{id}",
+					"raw": "http://localhost:5144/api/difficulties/1",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -245,7 +197,7 @@
 					"path": [
 						"api",
 						"difficulties",
-						"{id}"
+						"1"
 					]
 				}
 			},
@@ -299,30 +251,6 @@
 			"response": []
 		},
 		{
-			"name": "GetGhostById",
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:5144/api/ghosts/{id}",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "5144",
-					"path": [
-						"api",
-						"ghosts",
-						"{id}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "CreateGhost",
 			"request": {
 				"auth": {
@@ -332,7 +260,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{ \"id\": 0, \"name\": \"Banshee\" }",
+					"raw": "{\n  \"name\": \"Domovoi\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -364,7 +292,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{ \"id\": 1, \"name\": \"Phantom\" }",
+					"raw": "{\n  \"id\": 2,\n  \"name\": \"Poltergeist\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -372,7 +300,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:5144/api/ghosts/{id}",
+					"raw": "http://localhost:5144/api/ghosts/2",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -381,7 +309,7 @@
 					"path": [
 						"api",
 						"ghosts",
-						"{id}"
+						"2"
 					]
 				}
 			},
@@ -435,30 +363,6 @@
 			"response": []
 		},
 		{
-			"name": "GetItemById",
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:5144/api/items/{id}",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "5144",
-					"path": [
-						"api",
-						"items",
-						"{id}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "CreateItem",
 			"request": {
 				"auth": {
@@ -468,7 +372,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{ \"id\": 0, \"name\": \"Candle\", \"ownerId\": 1, \"currentHolderId\": 1 }",
+					"raw": "{\n  \"name\": \"UV Light\",\n  \"ownerId\": 1,\n  \"currentHolderId\": 2,\n  \"gameSessionId\": 1\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -580,7 +484,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{ \"id\": 0, \"name\": \"Player2\", \"sanity\": 90, \"isDead\": false }",
+					"raw": "{\n  \"name\": \"PlayerX\",\n  \"sanity\": 85,\n  \"isDead\": false,\n  \"gameSessionId\": 1\n}",
 					"options": {
 						"raw": {
 							"language": "json"
