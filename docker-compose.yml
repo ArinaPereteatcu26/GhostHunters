@@ -298,7 +298,7 @@ services:
 
   lobbyservice:
     image: ${LOBBY_IMAGE}
-#    platform: linux/amd64
+    platform: linux/arm64
     container_name: lobby_service_dev
     environment:
       - ConnectionStrings__DefaultConnection=Host=lobby-postgres;Port=5432;Database=${LOBBY_DB_NAME};Username=${LOBBY_DB_USER};Password=${LOBBY_DB_PASSWORD}
@@ -335,7 +335,7 @@ services:
 
   mapservice:
     image: ${MAP_IMAGE}
-#    platform: linux/amd64
+    platform: linux/arm64
     container_name: map_service_dev
     environment:
       - DB_HOST=map-postgres
@@ -344,7 +344,7 @@ services:
       - DB_USER=${MAP_DB_USER}
       - SA_PASSWORD=${MAP_SA_PASSWORD}
     ports:
-      - "5000:8080"
+      - "5050:8080"
     depends_on:
       map-postgres:
         condition: service_healthy
