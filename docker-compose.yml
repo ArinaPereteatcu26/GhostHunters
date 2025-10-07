@@ -215,10 +215,6 @@ services:
   db_journal:
     image: postgres:15
     container_name: journal-db
-    environment:
-      POSTGRES_USER: ${JOURNAL_DB_USER}
-      POSTGRES_PASSWORD: ${JOURNAL_DB_PASSWORD}
-      POSTGRES_DB: ${JOURNAL_DB}
     volumes:
       - journal_data:/var/lib/postgresql/data
       - ./db/journal.sql:/docker-entrypoint-initdb.d/journal.sql:ro
@@ -239,17 +235,21 @@ services:
       - .:/app
     ports:
       - "8003:8000"
+    environment:
+      JOURNAL_DB_HOST: ${JOURNAL_DB_HOST}
+      JOURNAL_DB_PORT: ${JOURNAL_DB_PORT}
+      JOURNAL_DB_USER: ${JOURNAL_DB_USER}
+      JOURNAL_DB_PASSWORD: ${JOURNAL_DB_PASSWORD}
+      JOURNAL_DB_NAME: ${JOURNAL_DB_NAME}
+      JOURNAL_DATABASE_URL: postgresql+psycopg2://${JOURNAL_DB_USER}:${JOURNAL_DB_PASSWORD}@${JOURNAL_DB_HOST}:${JOURNAL_DB_PORT}/${JOURNAL_DB_NAME}
     depends_on:
-      - db_journal
+      db_journal:
+        condition: service_healthy
 
   # --- Postgres for Shop service ---
   db_shop:
     image: postgres:15
     container_name: shop-db
-    environment:
-      POSTGRES_USER: ${SHOP_DB_USER}
-      POSTGRES_PASSWORD: ${SHOP_DB_PASSWORD}
-      POSTGRES_DB: ${SHOP_DB}
     volumes:
       - shop_data:/var/lib/postgresql/data
       - ./db/shop.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -270,6 +270,13 @@ services:
       - .:/app
     ports:
       - "8002:8000"
+    environment:
+      SHOP_DB_HOST: ${SHOP_DB_HOST}
+      SHOP_DB_PORT: ${SHOP_DB_PORT}
+      SHOP_DB_USER: ${SHOP_DB_USER}
+      SHOP_DB_PASSWORD: ${SHOP_DB_PASSWORD}
+      SHOP_DB_NAME: ${SHOP_DB_NAME}
+      SHOP_DATABASE_URL: postgresql://${SHOP_DB_USER}:${SHOP_DB_PASSWORD}@${SHOP_DB_HOST}:${SHOP_DB_PORT}/${SHOP_DB_NAME}
     depends_on:
       db_shop:
         condition: service_healthy
