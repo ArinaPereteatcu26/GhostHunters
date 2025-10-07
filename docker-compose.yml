@@ -1,4 +1,3 @@
-
 services:
   # --- MySQL for Inventory ---
   db_inventory:
@@ -212,67 +211,7 @@ services:
       DB_CONNECTION_STRING: "Host=db_ghostai;Port=5432;Database=${GHOSTAI_POSTGRES_DB};Username=${GHOSTAI_POSTGRES_USER};Password=${GHOSTAI_POSTGRES_PASSWORD}"
       REDIS_CONNECTION_STRING: "redis:6381"
 
-  # --- Azure SQL Edge for Lobby Service ---
-#  lobby_sqlserver:
-#    image: mcr.microsoft.com/azure-sql-edge:latest
-#    environment:
-#      - ACCEPT_EULA=Y
-#      - SA_PASSWORD=${LOBBY_SA_PASSWORD}
-#    ports:
-#      - "${LOBBY_DB_PORT}:1433"
-#    volumes:
-#      - lobby_sqlserver_data:/var/opt/mssql
-#      - ./db/lobbyservice.sql:/docker-entrypoint-initdb.d/lobbyservice.sql:ro
-#    restart: unless-stopped
-#    healthcheck:
-#      test: [ "CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P ${LOBBY_SA_PASSWORD} -Q 'SELECT 1'" ]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 10
-#
-#  lobbyservice:
-#    image: ${LOBBY_IMAGE}
-#    platform: linux/arm64
-#    ports:
-#      - "5144:80"
-#    depends_on:
-#      lobby_sqlserver:
-#        condition: service_healthy
-#    environment:
-#      - ConnectionStrings__DefaultConnection=Server=lobby_sqlserver;Database=${LOBBY_DB_NAME};User Id=${LOBBY_DB_USER};Password=${LOBBY_SA_PASSWORD}
-#
-#  # --- Azure SQL Edge for Map Service ---
-#  map_sqlserver:
-#    image: mcr.microsoft.com/azure-sql-edge:latest
-#    environment:
-#      - ACCEPT_EULA=Y
-#      - SA_PASSWORD=${MAP_SA_PASSWORD}
-#    ports:
-#      - "${MAP_DB_PORT}:1433"
-#    volumes:
-#      - map_sqlserver_data:/var/opt/mssql
-#      - ./db/map/mapservice.sql:/docker-entrypoint-initdb.d/mapservice.sql:ro
-#    restart: unless-stopped
-#    healthcheck:
-#      test: [ "CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P ${MAP_SA_PASSWORD} -Q 'SELECT 1'" ]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 10
-#
-#  mapservice:
-#    image: ${MAP_IMAGE}
-#    platform: linux/arm64
-#    ports:
-#      - "5035:80"
-#    depends_on:
-#      map_sqlserver:
-#        condition: service_healthy
-#    environment:
-#      - ConnectionStrings__DefaultConnection=Server=map_sqlserver;Database=${MAP_DB_NAME};User Id=${MAP_DB_USER};Password=${MAP_SA_PASSWORD}
-#    volumes:
-#      - ./init.sql:/app/init.sql
-
-    # POSTGREQL for Journal service
+  # --- Postgres for Journal service ---
   db_journal:
     image: postgres:15
     container_name: journal-db
@@ -303,7 +242,7 @@ services:
     depends_on:
       - db_journal
 
-    # POSTGREQL for Shop service
+  # --- Postgres for Shop service ---
   db_shop:
     image: postgres:15
     container_name: shop-db
@@ -334,7 +273,85 @@ services:
     depends_on:
       db_shop:
         condition: service_healthy
+    
+  # --- Postgres for Lobby Service ---
+  lobby-postgres:
+    image: postgres:16-alpine
+    container_name: lobby_postgres_dev
+    environment:
+      POSTGRES_DB: ${LOBBY_DB_NAME}
+      POSTGRES_USER: ${LOBBY_DB_USER}
+      POSTGRES_PASSWORD: ${LOBBY_DB_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - lobby_pgdata:/var/lib/postgresql/data
+      - ./db/lobby.sql:/docker-entrypoint-initdb.d/001_lobby.sql:ro
+    networks:
+      - lobby_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${LOBBY_DB_USER}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
 
+  lobbyservice:
+    image: ${LOBBY_IMAGE}
+    platform: linux/arm64
+    container_name: lobby_service_dev
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=lobby-postgres;Port=5432;Database=${LOBBY_DB_NAME};Username=${LOBBY_DB_USER};Password=${LOBBY_DB_PASSWORD}
+    ports:
+      - "5144:8080"
+    depends_on:
+      lobby-postgres:
+        condition: service_healthy
+    networks:
+      - lobby_network
+    restart: unless-stopped
+
+  # --- Postgres for Map Service ---
+  map-postgres:
+    image: postgres:15-alpine
+    container_name: map_postgres_dev
+    environment:
+      POSTGRES_DB: ${MAP_DB_NAME}
+      POSTGRES_USER: ${MAP_DB_USER}
+      POSTGRES_PASSWORD: ${MAP_SA_PASSWORD}
+    ports:
+      - "5434:5432"
+    volumes:
+      - map_pgdata:/var/lib/postgresql/data
+      - ./db/map.sql:/docker-entrypoint-initdb.d/001_map.sql:ro
+    networks:
+      - map_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${MAP_DB_USER}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  mapservice:
+    image: ${MAP_IMAGE}
+    platform: linux/arm64
+    container_name: map_service_dev
+    environment:
+      - DB_HOST=map-postgres
+      - DB_PORT=5432
+      - DB_NAME=${MAP_DB_NAME}
+      - DB_USER=${MAP_DB_USER}
+      - SA_PASSWORD=${MAP_SA_PASSWORD}
+    ports:
+      - "5050:8080"
+    depends_on:
+      map-postgres:
+        condition: service_healthy
+    networks:
+      - map_network
+    restart: unless-stopped
+    
 volumes:
   inv_mysql_data:
   chat_mysql_data:
@@ -343,19 +360,15 @@ volumes:
   usermanagement_pgdata:
   ghostai_pgdata:
   redis_data:
-  lobby_sqlserver_data:
-  map_sqlserver_data:
+  lobby_pgdata:
+  map_pgdata:
   shop_data:
   journal_data:
-    
+
 networks:
   usermanagement_network:
     driver: bridge
-
-
-
-
-  
-
-
-
+  lobby_network:  
+    driver: bridge
+  map_network: 
+    driver: bridge
