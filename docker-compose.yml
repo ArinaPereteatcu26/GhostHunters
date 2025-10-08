@@ -241,7 +241,6 @@ services:
       JOURNAL_DB_USER: ${JOURNAL_DB_USER}
       JOURNAL_DB_PASSWORD: ${JOURNAL_DB_PASSWORD}
       JOURNAL_DB_NAME: ${JOURNAL_DB_NAME}
-      JOURNAL_DATABASE_URL: postgresql+psycopg2://${JOURNAL_DB_USER}:${JOURNAL_DB_PASSWORD}@${JOURNAL_DB_HOST}:${JOURNAL_DB_PORT}/${JOURNAL_DB_NAME}
     depends_on:
       db_journal:
         condition: service_healthy
@@ -276,7 +275,6 @@ services:
       SHOP_DB_USER: ${SHOP_DB_USER}
       SHOP_DB_PASSWORD: ${SHOP_DB_PASSWORD}
       SHOP_DB_NAME: ${SHOP_DB_NAME}
-      SHOP_DATABASE_URL: postgresql://${SHOP_DB_USER}:${SHOP_DB_PASSWORD}@${SHOP_DB_HOST}:${SHOP_DB_PORT}/${SHOP_DB_NAME}
     depends_on:
       db_shop:
         condition: service_healthy
