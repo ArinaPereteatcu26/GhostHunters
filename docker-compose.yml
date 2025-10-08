@@ -215,13 +215,17 @@ services:
   db_journal:
     image: postgres:15
     container_name: journal-db
+    environment:
+      POSTGRES_USER: ${JOURNAL_DB_USER}
+      POSTGRES_PASSWORD: ${JOURNAL_DB_PASSWORD}
+      POSTGRES_DB: ${JOURNAL_DB_NAME}
     volumes:
       - journal_data:/var/lib/postgresql/data
       - ./db/journal.sql:/docker-entrypoint-initdb.d/journal.sql:ro
     ports:
       - "5436:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d journal_service"]
+      test: ["CMD-SHELL", "pg_isready -U ${JOURNAL_DB_USER} -d ${JOURNAL_DB_NAME}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -249,13 +253,17 @@ services:
   db_shop:
     image: postgres:15
     container_name: shop-db
+    environment:
+      POSTGRES_USER: ${SHOP_DB_USER}
+      POSTGRES_PASSWORD: ${SHOP_DB_PASSWORD}
+      POSTGRES_DB: ${SHOP_DB_NAME}
     volumes:
       - shop_data:/var/lib/postgresql/data
       - ./db/shop.sql:/docker-entrypoint-initdb.d/init.sql:ro
     ports:
       - "5437:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d shop_service"]
+      test: ["CMD-SHELL", "pg_isready -U ${SHOP_DB_USER} -d ${SHOP_DB_NAME}"]
       interval: 5s
       timeout: 5s
       retries: 5
