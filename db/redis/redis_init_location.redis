@@ -1,0 +1,6 @@
+FLUSHALL
+
+HSET location:1:Katrincik userId "Katrincik" lobbyId "1" x 12.5 y 7.8 z 3.2 room "library" item "book" alone "false" speaking "true" hiding "false" last_update "2025-10-08T20:10:05.132Z"
+HSET location:1:Arina userId "Arina" lobbyId "1" x 15.1 y 9.2 z 3.0 room "library" item "camera" alone "false" speaking "false" hiding "true" last_update "2025-10-08T20:10:10.000Z"
+
+SADD room:1:library "Katrincik" "Arina"
