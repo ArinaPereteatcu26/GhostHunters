@@ -76,7 +76,7 @@ services:
 
   # --- GHOST AI (.NET) ---
   ghostaiservice:
-    image: arinyan/ghostai-service:2.6
+    image: arinyan/ghostai-service:3.3
     env_file: .env
     environment:
       - DB_CONNECTION_STRING=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=ghostai_db;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
@@ -106,7 +106,7 @@ services:
 
   # --- JOURNAL (FastAPI) ---
   web-journal:
-    image: aburdui/journal-service:2.1
+    image: aburdui/journal-service:2.2
     env_file: .env
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/journal_db
@@ -156,7 +156,7 @@ services:
 
   # --- GHOST (Node) ---
   ghost-service:
-    image: katrincik123/ghost-service:1.0.6
+    image: katrincik123/ghost-service:1.0.9
     env_file: .env
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/ghosts_db
@@ -170,7 +170,7 @@ services:
 
   # --- LOCATION (Node) ---
   location-service:
-    image: katrincik123/location-service:1.0.3
+    image: katrincik123/location-service:1.0.4
     env_file: .env
     environment:
       - REDIS_HOST=${REDIS_HOST}
