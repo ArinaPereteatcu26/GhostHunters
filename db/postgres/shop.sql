@@ -1,5 +1,5 @@
-CREATE DATABASE shop_db;
-\c shop_db;
+-- CREATE DATABASE shop_db;
+-- \c shop_db;
 
 DROP TABLE IF EXISTS purchases CASCADE;
 DROP TABLE IF EXISTS items CASCADE;

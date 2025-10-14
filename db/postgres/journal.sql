@@ -1,5 +1,5 @@
-CREATE DATABASE journal_db;
-\c journal_db;
+-- CREATE DATABASE journal_db;
+-- \c journal_db;
 
 DROP TABLE IF EXISTS guesses;
 DROP TABLE IF EXISTS entries;

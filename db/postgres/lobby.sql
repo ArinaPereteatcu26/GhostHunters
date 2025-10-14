@@ -1,5 +1,5 @@
-CREATE DATABASE lobby_db;
-\c lobby_db;
+-- CREATE DATABASE lobby_db;
+-- \c lobby_db;
 
 -- 1. Tables (EF Core will also handle schema, but IF NOT EXISTS adds safety)
 CREATE TABLE IF NOT EXISTS "Difficulties" (

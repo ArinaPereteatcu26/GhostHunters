@@ -1,5 +1,5 @@
-CREATE DATABASE ghosts_db;
-\c ghosts_db;
+-- CREATE DATABASE ghosts_db;
+-- \c ghosts_db;
 
 CREATE TABLE IF NOT EXISTS ghost_types (
                                            id SERIAL PRIMARY KEY,
@@ -21,7 +21,6 @@ CREATE TABLE IF NOT EXISTS type_b_symptoms (
                                                ghost_type_id INT NOT NULL REFERENCES ghost_types(id) ON DELETE CASCADE,
                                                description TEXT NOT NULL
 );
-
 DO $$
     BEGIN
         IF NOT EXISTS (SELECT 1 FROM ghost_types) THEN

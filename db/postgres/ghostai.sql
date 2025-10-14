@@ -4,8 +4,8 @@
 -- and populates it only if empty
 -- ========================================
 
-CREATE DATABASE ghostai_db;
-\c ghostai_db;
+-- CREATE DATABASE ghostai_db;
+-- \c ghostai_db;
 -- ------------------
 -- 1️⃣ Create Table
 -- ------------------

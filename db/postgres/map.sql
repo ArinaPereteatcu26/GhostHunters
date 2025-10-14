@@ -1,5 +1,5 @@
-CREATE DATABASE map_db;
-\c map_db;
+-- CREATE DATABASE map_db;
+-- \c map_db;
 
 CREATE TABLE IF NOT EXISTS "Maps" (
                                       "Id" SERIAL PRIMARY KEY,

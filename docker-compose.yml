@@ -1,223 +1,436 @@
-version: "3.9"
-
 networks:
   app-net:
-    driver: bridge
+    external: true
+    name: app-net
 
 services:
-  # --- GLOBAL POSTGRES ---
-  postgres:
-    image: postgres:15-alpine
-    container_name: ghosthunters-postgres
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: postgres
-    networks: [app-net]
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-      - ./db/postgres:/docker-entrypoint-initdb.d
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER}" ]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    restart: unless-stopped
+  #  # --- GLOBAL POSTGRES ---
+  #  postgres:
+  #    image: postgres:15-alpine
+  #    container_name: ghosthunters-postgres
+  #    environment:
+  #      POSTGRES_USER: ${POSTGRES_USER}
+  #      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #      POSTGRES_DB: postgres
+  #    networks: [app-net]
+  #    volumes:
+  #      - postgres-data:/var/lib/postgresql/data
+  #      - ./db/postgres:/docker-entrypoint-initdb.d
+  #    healthcheck:
+  #      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER}" ]
+  #      interval: 5s
+  #      timeout: 3s
+  #      retries: 5
+  #    restart: unless-stopped
 
   # --- GLOBAL REDIS ---
-  redis:
-    image: redis:7-alpine
-    container_name: ghosthunters-redis
-    command: >
-      sh -c "redis-server --requirepass ${REDIS_PASSWORD} &
-             sleep 3 &&
-             redis-cli -a ${REDIS_PASSWORD} < /data/redis_init_location.redis &&
-             tail -f /dev/null"
-    volumes:
-      - redis-data:/data
-      - ./db/redis/redis_init_location.redis:/data/redis_init_location.redis
-    networks: [app-net]
-    healthcheck:
-      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping" ]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    restart: unless-stopped
+  #  redis:
+  #    image: redis:7-alpine
+  #    container_name: ghosthunters-redis
+  #    command: >
+  #      sh -c "redis-server --requirepass ${REDIS_PASSWORD} &
+  #             sleep 3 &&
+  #             redis-cli -a ${REDIS_PASSWORD} < /data/redis_init_location.redis &&
+  #             tail -f /dev/null"
+  #    volumes:
+  #      - redis-data:/data
+  #      - ./db/redis/redis_init_location.redis:/data/redis_init_location.redis
+  #    networks: [app-net]
+  #    healthcheck:
+  #      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping" ]
+  #      interval: 5s
+  #      timeout: 3s
+  #      retries: 5
+  #    restart: unless-stopped
 
   # --- GLOBAL MYSQL ---
-  mysql:
-    image: mysql:8
+  #  mysql:
+  #    image: mysql:8
+  #    environment:
+  #      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+  #    volumes:
+  #      - mysql-data:/var/lib/mysql
+  #      - ./db/mysql/mysql.sql:/docker-entrypoint-initdb.d/mysql.sql
+  #    healthcheck:
+  #      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}" ]
+  #      interval: 5s
+  #      timeout: 5s
+  #      retries: 10
+  #    networks: [app-net]
+  #    restart: unless-stopped
+
+# --- USER MANAGEMENT (.NET) ---
+  postgres-users:
+    image: postgres:15-alpine
+    container_name: postgres-users
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      POSTGRES_USER: ${USER_DB_USER}
+      POSTGRES_PASSWORD: ${USER_DB_PASSWORD}
+      POSTGRES_DB: ${USER_DB_NAME}
     volumes:
-      - mysql-data:/var/lib/mysql
-      - ./db/mysql/mysql.sql:/docker-entrypoint-initdb.d/mysql.sql
+      - postgres-users-data:/var/lib/postgresql/data
+      - ./db/postgres/users.sql:/docker-entrypoint-initdb.d/001_users.sql:ro    
+    ports:
+      - "5433:5432"
+    networks:
+      - app-net
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}" ]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U ${USER_DB_USER}"]
+      interval: 10s
       timeout: 5s
-      retries: 10
-    networks: [app-net]
-    restart: unless-stopped
+      retries: 5
 
-  # --- USER MANAGEMENT (.NET) ---
+  
   usermanagement-service:
-    image: arinyan/usermanagement-service:2.6
+    image: arinyan/usermanagement-service:3.1
+    container_name: usermanagement-service
     env_file: .env
     environment:
-      - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=users_db;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=users_db
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5170
+      # ✅ Use container name 'postgres-users', not environment variable
+      - ConnectionStrings__DefaultConnection=Host=postgres-users;Port=5432;Database=${USER_DB_NAME};Username=${USER_DB_USER};Password=${USER_DB_PASSWORD}
     depends_on:
-      postgres:
-        condition: service_healthy
-    ports: ["5169:5169"]
-    networks: [app-net]
-    restart: unless-stopped
+      postgres-users:
+        condition: service_healthy  # ✅ Changed to wait for healthy
+    ports:
+      - "5170:5170"
+    networks:
+      - app-net
 
-  # --- GHOST AI (.NET) ---
+  
+  #   --- GHOST AI (.NET) ---
+  postgres-ghostai:
+    image: postgres:15-alpine
+    container_name: postgres-ghostai
+    environment:
+      POSTGRES_USER: ${GHOSTAI_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${GHOSTAI_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${GHOSTAI_POSTGRES_DB}
+    volumes:
+      - postgres-ghostai-data:/var/lib/postgresql/data
+      - ./db/postgres/ghostai.sql:/docker-entrypoint-initdb.d/001_ghostai.sql:ro
+    networks:
+      - app-net
+
   ghostaiservice:
-    image: arinyan/ghostai-service:3.3
+    image: arinyan/ghostai-service:3.6
     env_file: .env
     environment:
-      - DB_CONNECTION_STRING=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=ghostai_db;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - DB_CONNECTION_STRING=Host=postgres-ghostai;Port=5432;Database=${GHOSTAI_POSTGRES_DB};Username=${GHOSTAI_POSTGRES_USER};Password=${GHOSTAI_POSTGRES_PASSWORD}
       - ASPNETCORE_URLS=http://+:8080
-      - Npgsql__MapFieldsAsLowerCase=true
-      - POSTGRES_DB=ghostai_db
     depends_on:
-      postgres:
-        condition: service_healthy
-    ports: ["8085:8080"]
-    networks: [app-net]
-    restart: unless-stopped
+      postgres-ghostai:
+        condition: service_started
+    networks:
+      - app-net
+
 
   # --- SHOP (FastAPI) ---
+  shop_db:
+    image: postgres:15-alpine
+    container_name: shop_db
+    environment:
+      POSTGRES_USER: ${SHOP_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${SHOP_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${SHOP_POSTGRES_DB}
+    volumes:
+      - shop-data:/var/lib/postgresql/data
+      - ./db/postgres/shop.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5437:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${SHOP_POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-net
+
   web-shop:
-    image: aburdui/shop-service:2.1.1
+    image: aburdui/shop-service:2.3
+    container_name: web-shop
     env_file: .env
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/shop_db
-      - POSTGRES_DB=shop_db
+      - DATABASE_URL=postgresql://${SHOP_POSTGRES_USER}:${SHOP_POSTGRES_PASSWORD}@postgres-shop:5432/${SHOP_POSTGRES_DB}
     depends_on:
-      postgres:
+      shop_db:
         condition: service_healthy
-    ports: ["8002:8000"]
-    networks: [app-net]
+    ports:
+      - "8002:8000"
+    networks:
+      - app-net
     restart: unless-stopped
 
   # --- JOURNAL (FastAPI) ---
-  web-journal:
-    image: aburdui/journal-service:2.2
+  journal_db:
+    image: postgres:15-alpine
+    container_name: journal_db
+    environment:
+      POSTGRES_USER: ${JOURNAL_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${JOURNAL_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${JOURNAL_POSTGRES_DB}
+    volumes:
+      - journal-data:/var/lib/postgresql/data
+      - ./db/postgres/journal.sql:/docker-entrypoint-initdb.d/journal.sql:ro
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${JOURNAL_POSTGRES_USER} -d ${JOURNAL_POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web_journal:
+    image: aburdui/journal-service:2.5
+    container_name: journal-service
     env_file: .env
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/journal_db
-      - POSTGRES_DB=journal_db
+    - DATABASE_URL=postgresql://${JOURNAL_POSTGRES_USER}:${JOURNAL_POSTGRES_PASSWORD}@journal_db:5432/${JOURNAL_POSTGRES_DB}
     depends_on:
-      postgres:
+      journal_db:
         condition: service_healthy
-    ports: ["8003:8000"]
-    networks: [app-net]
-    restart: unless-stopped
+    ports:
+      - "8003:8000"
+    networks:
+      - app-net
+    
+    
+    
+    # --- LOBBY (.NET) ---
+#  lobby_postgres:
+#    image: postgres:16-alpine
+#    container_name: lobby_postgres
+#    environment:
+#      POSTGRES_DB: ${LOBBY_DB_NAME}
+#      POSTGRES_USER: ${LOBBY_DB_USER}
+#      POSTGRES_PASSWORD: ${LOBBY_DB_PASSWORD}
+#      POSTGRES_LOG_STATEMENT: all 
+#    ports:
+#      - "5438:5432"
+#    volumes:
+#      - ./db/postgres/lobby.sql:/docker-entrypoint-initdb.d/001_lobby.sql:ro
+#      - lobby-postgres-data:/var/lib/postgresql/data
+#    healthcheck:
+#      test: [ "CMD-SHELL", "pg_isready -U ${LOBBY_DB_USER} -d ${LOBBY_DB_NAME}" ]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: unless-stopped
+#    networks:
+#      - app-net
+#  
+#  
+#  
+#  lobby:
+#      image: zagorodniuchka/lobby-service:latest
+#      platform: linux/arm64
+#      env_file: .env
+#      environment:
+#        - ASPNETCORE_ENVIRONMENT=Development
+#        - ASPNETCORE_URLS=http://+:8080
+#        - ConnectionStrings__DefaultConnection=Host=lobby-postgres;Port=5432;Database=${LOBBY_DB_NAME:-LobbyDb};Username=${LOBBY_DB_USER:-postgres};Password=${LOBBY_DB_PASSWORD:-postgres}
+#        - DATABASE_URL=postgresql://${LOBBY_DB_USER:-postgres}:${LOBBY_DB_PASSWORD:-postgres}@lobby-postgres:5432/${LOBBY_DB_NAME:-LobbyDb}
+#        - POSTGRES_DB=${LOBBY_DB_NAME:-LobbyDb}
+#      depends_on:
+#        lobby_postgres:
+#          condition: service_healthy
+#      ports: ["5144:8080"]
+#      networks: [app-net]
+#      restart: unless-stopped
+  
+  # --- MAP SERVICE (.NET) ---
+#  map_postgres:
+#    image: postgres:15-alpine
+#    container_name: map_postgres
+#    environment:
+#      POSTGRES_USER: ${MAP_DB_USER}
+#      POSTGRES_PASSWORD: ${MAP_DB_PASSWORD}
+#      POSTGRES_DB: ${MAP_DB_NAME}
+#    volumes:
+#      - map_pgdata:/var/lib/postgresql/data
+#      - ./db/postgres/map.sql:/docker-entrypoint-initdb.d/001_map.sql:ro
+#    ports:
+#      - "5434:5432" 
+#    networks:
+#      - app-net
+#    healthcheck:
+#      test: ["CMD-SHELL", "pg_isready -U ${MAP_DB_USER}"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#
+#  map-service:
+#    image: zagorodniuchka/map-service:latest
+#    container_name: map-service
+#    platform: linux/arm64
+#    env_file: .env
+#    environment:
+#      - ASPNETCORE_ENVIRONMENT=Development
+#      - ASPNETCORE_URLS=http://+:8080
+#      - ConnectionStrings__DefaultConnection=Host=map_postgres;Port=5432;Database=${MAP_DB_NAME};Username=${MAP_DB_USER};Password=${MAP_DB_PASSWORD}
+#    depends_on:
+#      map_postgres:
+#        condition: service_healthy
+#    ports:
+#      - "5050:8080"
+#    networks:
+#      - app-net
 
-  # --- LOBBY (.NET) ---
-  lobby:
-    image: zagorodniuchka/lobby-service:latest
-    platform: linux/arm64
-    env_file: .env
+
+   #--- GHOST (Node) ---
+  ghost_postgres:
+    image: postgres:15-alpine
+    container_name: ghost_db
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=lobby_db;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/lobby_db
-      - POSTGRES_DB=lobby_db
-    depends_on:
-      postgres:
-        condition: service_healthy
-    ports: ["5144:8080"]
-    networks: [app-net]
-    restart: unless-stopped
+      POSTGRES_USER: ${GHOST_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${GHOST_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${GHOST_POSTGRES_DB}
+    volumes:
+      - ghost-data:/var/lib/postgresql/data
+      - ./db/postgres/ghosts.sql:/docker-entrypoint-initdb.d/ghosts.sql:ro
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${GHOST_POSTGRES_USER} -d ${GHOST_POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # --- MAP (.NET) ---
-  map:
-    image: zagorodniuchka/map-service:latest
-    platform: linux/arm64
-    env_file: .env
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=map_db;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/map_db
-      - POSTGRES_DB=map_db
-    depends_on:
-      postgres:
-        condition: service_healthy
-    ports: ["5050:8080"]
-    networks: [app-net]
-    restart: unless-stopped
-
-  # --- GHOST (Node) ---
   ghost-service:
-    image: katrincik123/ghost-service:1.0.9
+    image: katrincik123/ghost-service:1.2
+    container_name: ghost-service
     env_file: .env
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/ghosts_db
-      - POSTGRES_DB=ghosts_db
+      - DB_CONNECTION_STRING=Host=ghost_postgres;Port=5432;Database=${GHOST_POSTGRES_DB};Username=${GHOST_POSTGRES_USER};Password=${GHOST_POSTGRES_PASSWORD}
+      - ASPNETCORE_URLS=http://+:4001
     depends_on:
-      postgres:
+      ghost_postgres:
         condition: service_healthy
-    ports: ["4001:4001"]
-    networks: [app-net]
-    restart: unless-stopped
+    ports:
+      - "4001:4001"
+    networks:
+      - app-net
+    
+    
+   #--- LOCATION (Node) --- 
+  location_redis:
+    image: redis:7-alpine
+    container_name: location_redis
+    command: [ "redis-server", "--requirepass", "${LOCATION_REDIS_PASSWORD}" ]
+    volumes:
+      - ghost-redisdata:/data
+      - ./db/redis/redis_init_location.redis:/data/redis_init_location.redis
+    networks:
+      - app-net
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "${LOCATION_REDIS_PASSWORD}", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # --- LOCATION (Node) ---
   location-service:
-    image: katrincik123/location-service:1.0.4
+    image: katrincik123/location-service:1.0.6
+    container_name: location-service
     env_file: .env
     environment:
-      - REDIS_HOST=${REDIS_HOST}
-      - REDIS_PORT=${REDIS_PORT}
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_HOST=location_redis
+      - REDIS_PORT=${LOCATION_REDIS_PORT}
+      - REDIS_PASSWORD=${LOCATION_REDIS_PASSWORD}
+      - ASPNETCORE_URLS=http://+:4002
     depends_on:
-      redis:
+      location_redis:
         condition: service_healthy
-    ports: ["4002:4002"]
-    networks: [app-net]
-    restart: unless-stopped
-
-  # --- CHAT (FastAPI) ---
-  chat:
-    image: dgliga/chat-service:latest
-    env_file: .env
+    ports:
+      - "4002:4002"
+    networks:
+      - app-net
+ 
+  
+  
+  
+  # --- CHAT  ---
+  chat_db:
+    image: mysql:8.0
+    container_name: mysql_db_chat
+    environment:
+      MYSQL_DATABASE: ${CHAT_MYSQL_DATABASE}
+      MYSQL_USER: ${CHAT_MYSQL_USER}
+      MYSQL_PASSWORD: ${CHAT_MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${CHAT_MYSQL_ROOT_PASSWORD}
     command: >
-      sh -c "pip install pymysql cryptography &&
-             echo 'Waiting for MySQL...' &&
-             sleep 10 &&
-             uvicorn main:app --host 0.0.0.0 --port 8000"
-    environment:
-      - DATABASE_URL=mysql+pymysql://root:${MYSQL_ROOT_PASSWORD}@mysql:3306/chat_db
-    depends_on:
-      mysql:
-        condition: service_healthy
-    ports: ["8001:8000"]
-    networks: [app-net]
-    restart: unless-stopped
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${CHAT_MYSQL_ROOT_PASSWORD}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - mysql_chat_data:/var/lib/mysql
+      - ./db/mysql/chat.sql:/docker-entrypoint-initdb.d/001_chat.sql:ro
+    networks:
+      - app-net
+
+  chat-service:
+      image: dgliga/chat-service:latest
+      container_name: chat_service
+      env_file: .env
+      environment:
+        DATABASE_URL: "mysql+pymysql://${CHAT_MYSQL_USER}:${CHAT_MYSQL_PASSWORD}@chat_db:3306/${CHAT_MYSQL_DATABASE}?charset=utf8mb4"
+        SEED_TOKEN: ${CHAT_SEED_TOKEN}
+      depends_on:
+        chat_db:
+          condition: service_healthy
+      ports:
+        - "8001:8000"
+      networks:
+        - app-net
+      restart: unless-stopped
 
   # --- INVENTORY (FastAPI) ---
-  inventory:
-    image: dgliga/inventory-service:latest
-    env_file: .env
-    command: >
-      sh -c "pip install pymysql cryptography &&
-             echo 'Waiting for MySQL...' &&
-             sleep 10 &&
-             uvicorn main:app --host 0.0.0.0 --port 8000"
+  inventory-db:
+    image: mysql:8.0
+    container_name: mysql_db
     environment:
-      - DATABASE_URL=mysql+pymysql://root:${MYSQL_ROOT_PASSWORD}@mysql:3306/inventory_db
-    depends_on:
-      mysql:
-        condition: service_healthy
-    ports: ["8000:8000"]
-    networks: [app-net]
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-mysql}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db/mysql/inventory.sql:/docker-entrypoint-initdb.d/001_inventory.sql:ro
+    networks:
+      - app-net
     restart: unless-stopped
+
+  inventory:
+      image: dgliga/inventory-service:latest
+      container_name: inventory_service
+      command: >
+        sh -c "echo 'Waiting for MySQL...' &&
+               sleep 10 &&
+               uvicorn main:app --host 0.0.0.0 --port 8000"
+      environment:
+        DATABASE_URL: "mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@inventory-db:3306/${MYSQL_DATABASE}?charset=utf8mb4"
+        SEED_TOKEN: ${SEED_TOKEN}
+      depends_on:
+        inventory-db:
+          condition: service_healthy
+      ports:
+        - "8000:8000"
+      networks:
+        - app-net
 
   # --- API GATEWAY (Spring Boot) ---
   api-gateway:
@@ -226,26 +439,50 @@ services:
       dockerfile: Dockerfile
     container_name: api-gateway
     env_file: .env
+    environment:
+      - SPRING_APPLICATION_NAME=api-gateway
+      - SERVER_PORT=8090
+      
+      - USER_SERVICE_URL=http://usermanagement-service:5170
+      - GHOSTAI_SERVICE_URL=http://ghostaiservice:8080
+      - JOURNAL_SERVICE_URL=http://web-journal:8000
+      - SHOP_SERVICE_URL=http://web-shop:8000
+      - GHOST_SERVICE_URL=http://ghost-service:4001
+      - LOCATION_SERVICE_URL=http://location-service:4002
+      - INVENTORY_SERVICE_URL=http://inventory:8000 
+      - CHAT_SERVICE_URL=http://chat-service:8000
+     # - MAP_SERVICE_URL=http://map:8080
+      # - LOBBY_SERVICE_URL=http://lobby:8080
+   
+    
     depends_on:
-      - postgres
-      - redis
-      - mysql
       - usermanagement-service
       - ghostaiservice
-      - web-shop
-      - web-journal
-      - lobby
-      - map
-      - ghost-service
+      - web_journal
       - location-service
+      - ghost-service
+      - web-shop
       - inventory
-      - chat
+      - chat-service
+      #- lobby-service
+    
+     # - map-service    
     ports:
       - "8080:8090"
-    networks: [app-net]
+    networks:
+      - app-net
     restart: unless-stopped
 
 volumes:
-  postgres-data:
-  redis-data:
-  mysql-data:
+  postgres-users-data:
+  postgres-ghostai-data:
+  postgres-map-data:
+  journal-data:
+  shop-data:
+  ghost-data:
+  ghost-redisdata:
+  mysql_data:
+  #lobby-postgres-data:
+  mysql_chat_data:
+  # map_pgdata:
+  
