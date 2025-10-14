@@ -147,7 +147,7 @@ services:
       POSTGRES_PASSWORD: ${LOBBY_DB_PASSWORD}
       POSTGRES_LOG_STATEMENT: all
     ports:
-      - "5438:5433"
+      - "5438:5432"
     volumes:
       - ./db/postgres/lobby.sql:/docker-entrypoint-initdb.d/001_lobby.sql:ro
       - lobby-postgres-data:/var/lib/postgresql/data
@@ -162,19 +162,21 @@ services:
 
   lobby-service:
       image: zagorodniuchka/lobby-service:latest
+      container_name: lobby-service
       platform: linux/arm64
       env_file: .env
       environment:
         - ASPNETCORE_ENVIRONMENT=Development
         - ASPNETCORE_URLS=http://+:8080
-        - ConnectionStrings__DefaultConnection=Host=lobby-postgres;Port=5432;Database=${LOBBY_DB_NAME:-LobbyDb};Username=${LOBBY_DB_USER:-postgres};Password=${LOBBY_DB_PASSWORD:-postgres}
+        - ConnectionStrings__DefaultConnection=Host=lobby_postgres;Port=5432;Database=${LOBBY_DB_NAME:-LobbyDb};Username=${LOBBY_DB_USER:-postgres};Password=${LOBBY_DB_PASSWORD:-postgres}
         - DATABASE_URL=postgresql://${LOBBY_DB_USER:-postgres}:${LOBBY_DB_PASSWORD:-postgres}@lobby-postgres:5432/${LOBBY_DB_NAME:-LobbyDb}
         - POSTGRES_DB=${LOBBY_DB_NAME:-LobbyDb}
       depends_on:
         lobby_postgres:
           condition: service_healthy
       ports: ["5144:8080"]
-      networks: [app-net]
+      networks:
+        - app-net
       restart: unless-stopped
   
   # --- MAP SERVICE (.NET) ---
