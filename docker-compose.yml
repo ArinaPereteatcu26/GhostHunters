@@ -56,7 +56,7 @@ services:
     networks:
       - app-net
 
-  ghostaiservice:
+  ghostai-service:
     image: arinyan/ghostai-service:3.6
     env_file: .env
     environment:
@@ -350,7 +350,7 @@ services:
       - app-net
     restart: unless-stopped
 
-  inventory:
+  inventory-service:
       image: dgliga/inventory-service:latest
       container_name: inventory_service
       command: >
@@ -380,24 +380,24 @@ services:
       - SERVER_PORT=8090
       
       - USER_SERVICE_URL=http://usermanagement-service:5170
-      - GHOSTAI_SERVICE_URL=http://ghostaiservice:8080
+      - GHOSTAI_SERVICE_URL=http://ghostai-service:8080
       - JOURNAL_SERVICE_URL=http://web-journal:8000
       - SHOP_SERVICE_URL=http://web-shop:8000
       - GHOST_SERVICE_URL=http://ghost-service:4001
       - LOCATION_SERVICE_URL=http://location-service:4002
-      - INVENTORY_SERVICE_URL=http://inventory:8000 
+      - INVENTORY_SERVICE_URL=http://inventory-service:8000
       - CHAT_SERVICE_URL=http://chat-service:8000
       - MAP_SERVICE_URL=http://map-service:8080
       - LOBBY_SERVICE_URL=http://lobby-service:8080
     
     depends_on:
       - usermanagement-service
-      - ghostaiservice
+      - ghostai-service
       - web-journal
       - location-service
       - ghost-service
       - web-shop
-      - inventory
+      - inventory-service
       - chat-service
       - lobby-service
       - map-service
