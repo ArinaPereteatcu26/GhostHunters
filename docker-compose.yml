@@ -161,16 +161,16 @@ services:
       - app-net
 
   lobby-service:
-      image: zagorodniuchka/lobby-service:latest
+      image: zagorodniuchka/lobby-service:2.1
       container_name: lobby-service
       platform: linux/arm64
       env_file: .env
       environment:
         - ASPNETCORE_ENVIRONMENT=Development
         - ASPNETCORE_URLS=http://+:8080
-        - ConnectionStrings__DefaultConnection=Host=lobby_postgres;Port=5432;Database=${LOBBY_DB_NAME:-LobbyDb};Username=${LOBBY_DB_USER:-postgres};Password=${LOBBY_DB_PASSWORD:-postgres}
-        - DATABASE_URL=postgresql://${LOBBY_DB_USER:-postgres}:${LOBBY_DB_PASSWORD:-postgres}@lobby-postgres:5432/${LOBBY_DB_NAME:-LobbyDb}
-        - POSTGRES_DB=${LOBBY_DB_NAME:-LobbyDb}
+        - ConnectionStrings__DefaultConnection=Host=lobby_postgres;Port=5432;Database=${LOBBY_DB_NAME};Username=${LOBBY_DB_USER};Password=${LOBBY_DB_PASSWORD}
+        - DATABASE_URL=postgresql://${LOBBY_DB_USER}:${LOBBY_DB_PASSWORD}@lobby-postgres:5432/${LOBBY_DB_NAME}
+        - POSTGRES_DB=${LOBBY_DB_NAME}
       depends_on:
         lobby_postgres:
           condition: service_healthy

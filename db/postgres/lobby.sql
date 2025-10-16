@@ -1,7 +1,3 @@
--- CREATE DATABASE lobby_db;
--- \c lobby_db;
-
--- 1. Tables (EF Core will also handle schema, but IF NOT EXISTS adds safety)
 CREATE TABLE IF NOT EXISTS difficulties (
                                             id SERIAL PRIMARY KEY,
                                             name VARCHAR(100) NOT NULL
@@ -12,7 +8,7 @@ CREATE TABLE IF NOT EXISTS statuses (
                                         name VARCHAR(100) NOT NULL
     );
 
-CREATE TABLE IF NOT EXISTS lobby (
+CREATE TABLE IF NOT EXISTS lobbies (
                                        id SERIAL PRIMARY KEY,
                                        difficulty_id INT NOT NULL,
                                        ghost_type_id INT NOT NULL,
@@ -24,7 +20,6 @@ CREATE TABLE IF NOT EXISTS lobby (
     FOREIGN KEY (status_id) REFERENCES statuses(id) ON DELETE RESTRICT
     );
 
--- ✅ CHANGED: players → lobby_players
 CREATE TABLE IF NOT EXISTS lobby_players (
                                              id SERIAL PRIMARY KEY,
                                              user_id INT NOT NULL,
@@ -35,18 +30,16 @@ CREATE TABLE IF NOT EXISTS lobby_players (
                                              FOREIGN KEY (lobby_id) REFERENCES lobbies(id) ON DELETE CASCADE
     );
 
--- ✅ CHANGED: items → lobby_items
 CREATE TABLE IF NOT EXISTS lobby_items (
                                            id SERIAL PRIMARY KEY,
                                            name VARCHAR(100) NOT NULL,
     inventory_id INT NOT NULL,
     current_holder INT,
-    user_id INT,  -- ✅ ADDED: This column is in your C# model
+    user_id INT,
     lobby_id INT NOT NULL,
     FOREIGN KEY (lobby_id) REFERENCES lobbies(id) ON DELETE CASCADE
     );
 
--- 2. Seed lookup tables
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM difficulties) THEN
@@ -70,7 +63,6 @@ BEGIN
 END IF;
 END $$;
 
--- 3. Seed Lobbies
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM lobbies) THEN
@@ -91,7 +83,6 @@ WHERE d.name = 'Professional' AND s.name = 'Completed';
 END IF;
 END $$;
 
--- 4. Seed Players (✅ CHANGED table name)
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM lobby_players) THEN
@@ -107,7 +98,6 @@ WHERE l.ghost_type_id = 101;
 END IF;
 END $$;
 
--- 5. Seed Items (✅ CHANGED table name and added user_id)
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM lobby_items) THEN
@@ -115,7 +105,6 @@ BEGIN
 SELECT 'Flashlight', 1, 1001, 1001, l.id
 FROM lobbies l
 WHERE l.ghost_type_id = 101;
-
 INSERT INTO lobby_items (name, inventory_id, current_holder, user_id, lobby_id)
 SELECT 'EMF Reader', 2, 1002, 1002, l.id
 FROM lobbies l
