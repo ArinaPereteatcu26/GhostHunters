@@ -41,73 +41,75 @@ CREATE TABLE IF NOT EXISTS lobby_items (
     );
 
 DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM difficulties) THEN
-        INSERT INTO difficulties (name) VALUES
-            ('Amateur'),
-            ('Intermediate'),
-            ('Professional'),
-            ('Nightmare');
-END IF;
-END $$;
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM difficulties) THEN
+            INSERT INTO difficulties (name) VALUES
+                                                ('Amateur'),
+                                                ('Intermediate'),
+                                                ('Professional'),
+                                                ('Nightmare');
+        END IF;
+    END $$;
 
 DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM statuses) THEN
-        INSERT INTO statuses (name) VALUES
-            ('Waiting'),
-            ('In Progress'),
-            ('Completed'),
-            ('Failed'),
-            ('Abandoned');
-END IF;
-END $$;
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM statuses) THEN
+            INSERT INTO statuses (name) VALUES
+                                            ('Waiting'),
+                                            ('Started'),
+                                            ('In Progress'),
+                                            ('Paused'),
+                                            ('Completed'),
+                                            ('Abandoned');
+        END IF;
+    END $$;
 
 DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM lobbies) THEN
-        INSERT INTO lobbies (difficulty_id, ghost_type_id, map_id, status_id, created_at)
-SELECT d.id, 101, 1, s.id, CURRENT_TIMESTAMP - INTERVAL '2 hours'
-FROM difficulties d, statuses s
-WHERE d.name = 'Amateur' AND s.name = 'In Progress';
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM lobbies) THEN
+            INSERT INTO lobbies (difficulty_id, ghost_type_id, map_id, status_id, created_at)
+            SELECT d.id, 101, 1, s.id, CURRENT_TIMESTAMP - INTERVAL '2 hours'
+            FROM difficulties d, statuses s
+            WHERE d.name = 'Amateur' AND s.name = 'In Progress';
 
-INSERT INTO lobbies (difficulty_id, ghost_type_id, map_id, status_id, created_at)
-SELECT d.id, 102, 2, s.id, CURRENT_TIMESTAMP - INTERVAL '30 minutes'
-FROM difficulties d, statuses s
-WHERE d.name = 'Intermediate' AND s.name = 'Waiting';
+            INSERT INTO lobbies (difficulty_id, ghost_type_id, map_id, status_id, created_at)
+            SELECT d.id, 102, 2, s.id, CURRENT_TIMESTAMP - INTERVAL '30 minutes'
+            FROM difficulties d, statuses s
+            WHERE d.name = 'Intermediate' AND s.name = 'Waiting';
 
-INSERT INTO lobbies (difficulty_id, ghost_type_id, map_id, status_id, created_at)
-SELECT d.id, 103, 1, s.id, CURRENT_TIMESTAMP - INTERVAL '5 hours'
-FROM difficulties d, statuses s
-WHERE d.name = 'Professional' AND s.name = 'Completed';
-END IF;
-END $$;
-
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM lobby_players) THEN
-        INSERT INTO lobby_players (user_id, sanity, is_alive, lobby_id, joined_at)
-SELECT 1001, 75, TRUE, l.id, l.created_at
-FROM lobbies l
-WHERE l.ghost_type_id = 101;
-
-INSERT INTO lobby_players (user_id, sanity, is_alive, lobby_id, joined_at)
-SELECT 1002, 60, TRUE, l.id, l.created_at
-FROM lobbies l
-WHERE l.ghost_type_id = 101;
-END IF;
-END $$;
+            INSERT INTO lobbies (difficulty_id, ghost_type_id, map_id, status_id, created_at)
+            SELECT d.id, 103, 1, s.id, CURRENT_TIMESTAMP - INTERVAL '5 hours'
+            FROM difficulties d, statuses s
+            WHERE d.name = 'Professional' AND s.name = 'Completed';
+        END IF;
+    END $$;
 
 DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM lobby_items) THEN
-        INSERT INTO lobby_items (name, inventory_id, current_holder, user_id, lobby_id)
-SELECT 'Flashlight', 1, 1001, 1001, l.id
-FROM lobbies l
-WHERE l.ghost_type_id = 101;
-INSERT INTO lobby_items (name, inventory_id, current_holder, user_id, lobby_id)
-SELECT 'EMF Reader', 2, 1002, 1002, l.id
-FROM lobbies l
-WHERE l.ghost_type_id = 101;
-END IF;
-END $$;
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM lobby_players) THEN
+            INSERT INTO lobby_players (user_id, sanity, is_alive, lobby_id, joined_at)
+            SELECT 1001, 75, TRUE, l.id, l.created_at
+            FROM lobbies l
+            WHERE l.ghost_type_id = 101;
+
+            INSERT INTO lobby_players (user_id, sanity, is_alive, lobby_id, joined_at)
+            SELECT 1002, 60, TRUE, l.id, l.created_at
+            FROM lobbies l
+            WHERE l.ghost_type_id = 101;
+        END IF;
+    END $$;
+
+DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM lobby_items) THEN
+            INSERT INTO lobby_items (name, inventory_id, current_holder, user_id, lobby_id)
+            SELECT 'Flashlight', 1, 1001, 1001, l.id
+            FROM lobbies l
+            WHERE l.ghost_type_id = 101;
+
+            INSERT INTO lobby_items (name, inventory_id, current_holder, user_id, lobby_id)
+            SELECT 'EMF Reader', 2, 1002, 1002, l.id
+            FROM lobbies l
+            WHERE l.ghost_type_id = 101;
+        END IF;
+    END $$;
