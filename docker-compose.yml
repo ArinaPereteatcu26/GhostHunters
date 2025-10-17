@@ -27,7 +27,7 @@ services:
 
   usermanagement-service:
     image: arinyan/usermanagement-service:3.1
-    container_name: usermanagement-service
+    #container_name: usermanagement-service
     env_file: .env
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
@@ -37,8 +37,11 @@ services:
     depends_on:
       postgres-users:
         condition: service_healthy  # ✅ Changed to wait for healthy
-    ports:
-      - "5170:5170"
+    #ports:
+   #   - "5170:5170"
+    expose:
+      - "5170"
+
     networks:
       - app-net
 
@@ -65,6 +68,8 @@ services:
     depends_on:
       postgres-ghostai:
         condition: service_started
+    expose:
+      - "8080"
     networks:
       - app-net
 
@@ -91,15 +96,19 @@ services:
 
   web-shop:
     image: aburdui/shop-service:2.3
-    container_name: web-shop
+    #container_name: web-shop
     env_file: .env
     environment:
-      - DATABASE_URL=postgresql://${SHOP_POSTGRES_USER}:${SHOP_POSTGRES_PASSWORD}@postgres-shop:5432/${SHOP_POSTGRES_DB}
+     # - DATABASE_URL=postgresql://${SHOP_POSTGRES_USER}:${SHOP_POSTGRES_PASSWORD}@postgres-shop:5432/${SHOP_POSTGRES_DB}
+      - DATABASE_URL=postgresql://${SHOP_POSTGRES_USER}:${SHOP_POSTGRES_PASSWORD}@shop_db:5432/${SHOP_POSTGRES_DB}
+
     depends_on:
       shop_db:
         condition: service_healthy
-    ports:
-      - "8002:8000"
+    #ports:
+    #  - "8002:8000"
+    expose:
+      - "8000"
     networks:
       - app-net
     restart: unless-stopped
@@ -125,15 +134,17 @@ services:
 
   web-journal:
     image: aburdui/journal-service:2.5
-    container_name: journal-service
+    #container_name: journal-service
     env_file: .env
     environment:
     - DATABASE_URL=postgresql://${JOURNAL_POSTGRES_USER}:${JOURNAL_POSTGRES_PASSWORD}@journal_db:5432/${JOURNAL_POSTGRES_DB}
     depends_on:
       journal_db:
         condition: service_healthy
-    ports:
-      - "8003:8000"
+    #ports:
+     # - "8003:8000"
+    expose:
+      - "8000"
     networks:
       - app-net
 
@@ -162,7 +173,7 @@ services:
 
   lobby-service:
       image: zagorodniuchka/lobby-service:2.1
-      container_name: lobby-service
+     # container_name: lobby-service
       platform: linux/arm64
       env_file: .env
       environment:
@@ -174,7 +185,9 @@ services:
       depends_on:
         lobby_postgres:
           condition: service_healthy
-      ports: ["5144:8080"]
+      #ports: ["5144:8080"]
+      expose:
+      - "8080"
       networks:
         - app-net
       restart: unless-stopped
@@ -202,7 +215,7 @@ services:
 
   map-service:
     image: zagorodniuchka/map-service:latest
-    container_name: map-service
+    #container_name: map-service
     platform: linux/arm64
     env_file: .env
     environment:
@@ -212,8 +225,10 @@ services:
     depends_on:
       map_postgres:
         condition: service_healthy
-    ports:
-      - "5050:8080"
+    #ports:
+     # - "5050:8080"
+    expose:
+      - "8080"    
     networks:
       - app-net
 
@@ -238,7 +253,7 @@ services:
 
   ghost-service:
     image: katrincik123/ghost-service:1.2
-    container_name: ghost-service
+    #container_name: ghost-service
     env_file: .env
     environment:
       - DB_CONNECTION_STRING=Host=ghost_postgres;Port=5432;Database=${GHOST_POSTGRES_DB};Username=${GHOST_POSTGRES_USER};Password=${GHOST_POSTGRES_PASSWORD}
@@ -246,8 +261,10 @@ services:
     depends_on:
       ghost_postgres:
         condition: service_healthy
-    ports:
-      - "4001:4001"
+    #ports:
+     # - "4001:4001"
+    expose:
+      - "4001"
     networks:
       - app-net
 
@@ -269,7 +286,7 @@ services:
 
   location-service:
     image: katrincik123/location-service:1.0.8
-    container_name: location-service
+    #container_name: location-service
     env_file: .env
     environment:
       - LOCATION_REDIS_HOST=location_redis
@@ -280,8 +297,10 @@ services:
     depends_on:
       location_redis:
         condition: service_healthy
-    ports:
-      - "4002:4002"
+    #ports:
+    #  - "4002:4002"
+    expose:
+      - "4002"
     networks:
       - app-net
 
@@ -311,7 +330,7 @@ services:
 
   chat-service:
       image: dgliga/chat-service:latest
-      container_name: chat_service
+      #container_name: chat_service
       env_file: .env
       environment:
         DATABASE_URL: "mysql+pymysql://${CHAT_MYSQL_USER}:${CHAT_MYSQL_PASSWORD}@chat_db:3306/${CHAT_MYSQL_DATABASE}?charset=utf8mb4"
@@ -319,8 +338,10 @@ services:
       depends_on:
         chat_db:
           condition: service_healthy
-      ports:
-        - "8001:8000"
+      #ports:
+        #- "8001:8000"
+      expose:
+      - "8000"
       networks:
         - app-net
       restart: unless-stopped
@@ -352,7 +373,7 @@ services:
 
   inventory-service:
       image: dgliga/inventory-service:latest
-      container_name: inventory_service
+      #container_name: inventory_service
       command: >
         sh -c "echo 'Waiting for MySQL...' &&
                sleep 10 &&
@@ -363,8 +384,10 @@ services:
       depends_on:
         inventory-db:
           condition: service_healthy
-      ports:
-        - "8000:8000"
+  #    ports:
+   #     - "8000:8000"
+      expose:
+        - "8000"
       networks:
         - app-net
 
@@ -373,7 +396,7 @@ services:
     build:
       context: ./GhostHunters_GatewayService/gateway
       dockerfile: Dockerfile
-    container_name: api-gateway
+   # container_name: api-gateway
     env_file: .env
     environment:
       - SPRING_APPLICATION_NAME=api-gateway
