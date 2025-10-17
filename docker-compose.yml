@@ -57,7 +57,7 @@ services:
       - app-net
 
   ghostai-service:
-    image: arinyan/ghostai-service:3.6
+    image: arinyan/ghostai-service:3.8
     env_file: .env
     environment:
       - DB_CONNECTION_STRING=Host=postgres-ghostai;Port=5432;Database=${GHOSTAI_POSTGRES_DB};Username=${GHOSTAI_POSTGRES_USER};Password=${GHOSTAI_POSTGRES_PASSWORD}
