@@ -4,19 +4,21 @@ networks:
     name: app-net
 
 services:
-
   discovery:
     image: dgliga/discovery-service:latest
-    container_name: discovery
     environment:
       - JAVA_TOOL_OPTIONS=-Xms256m -Xmx512m
+      - EUREKA_SERVER_ENABLE_SELF_PRESERVATION=false
+      - EUREKA_SERVER_EVICTION_INTERVAL_TIMER_IN_MS=5000
     ports:
       - "8761:8761"
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8761/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 15
+    # NOTE: eclipse-temurin:21-jre base usually has no curl/wget; remove healthcheck
+    # or install curl in the image. Until then, comment it out:
+    # healthcheck:
+    #   test: ["CMD", "wget", "-qO-", "http://localhost:8761/actuator/health"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 15
     restart: unless-stopped
     networks: [app-net]
 # --- USER MANAGEMENT (.NET) ---
@@ -49,6 +51,12 @@ services:
       - ASPNETCORE_URLS=http://+:5170
       # ✅ Use container name 'postgres-users', not environment variable
       - ConnectionStrings__DefaultConnection=Host=postgres-users;Port=5432;Database=${USER_DB_NAME};Username=${USER_DB_USER};Password=${USER_DB_PASSWORD}
+      - eureka__client__serviceUrl__defaultZone=http://discovery:8761/eureka/
+      - spring__application__name=usermanagement
+      - EUREKA_URL=http://discovery:8761/eureka/
+      - APP_NAME=usermanagement
+      - PORT=5170
+      - SERVICE_HOSTNAME=usermanagement-service    
     depends_on:
       postgres-users:
         condition: service_healthy  # ✅ Changed to wait for healthy
@@ -80,6 +88,12 @@ services:
     environment:
       - DB_CONNECTION_STRING=Host=postgres-ghostai;Port=5432;Database=${GHOSTAI_POSTGRES_DB};Username=${GHOSTAI_POSTGRES_USER};Password=${GHOSTAI_POSTGRES_PASSWORD}
       - ASPNETCORE_URLS=http://+:8080
+      - eureka__client__serviceUrl__defaultZone=http://discovery:8761/eureka/
+      - spring__application__name=ghostai
+      - EUREKA_URL=http://discovery:8761/eureka/
+      - APP_NAME=ghostai
+      - PORT=8080
+      - SERVICE_HOSTNAME=ghostai-service
     depends_on:
       postgres-ghostai:
         condition: service_started
@@ -116,7 +130,10 @@ services:
     environment:
      # - DATABASE_URL=postgresql://${SHOP_POSTGRES_USER}:${SHOP_POSTGRES_PASSWORD}@postgres-shop:5432/${SHOP_POSTGRES_DB}
       - DATABASE_URL=postgresql://${SHOP_POSTGRES_USER}:${SHOP_POSTGRES_PASSWORD}@shop_db:5432/${SHOP_POSTGRES_DB}
-
+      - EUREKA_URL=http://discovery:8761/eureka/
+      - APP_NAME=shop
+      - PORT=8000
+      - SERVICE_HOSTNAME=web-shop
     depends_on:
       shop_db:
         condition: service_healthy
@@ -153,6 +170,10 @@ services:
     env_file: .env
     environment:
     - DATABASE_URL=postgresql://${JOURNAL_POSTGRES_USER}:${JOURNAL_POSTGRES_PASSWORD}@journal_db:5432/${JOURNAL_POSTGRES_DB}
+    - EUREKA_URL=http://discovery:8761/eureka/
+    - APP_NAME=journal
+    - PORT=8000
+    - SERVICE_HOSTNAME=web-journal  
     depends_on:
       journal_db:
         condition: service_healthy
@@ -197,6 +218,13 @@ services:
         - ConnectionStrings__DefaultConnection=Host=lobby_postgres;Port=5432;Database=${LOBBY_DB_NAME};Username=${LOBBY_DB_USER};Password=${LOBBY_DB_PASSWORD}
         - DATABASE_URL=postgresql://${LOBBY_DB_USER}:${LOBBY_DB_PASSWORD}@lobby-postgres:5432/${LOBBY_DB_NAME}
         - POSTGRES_DB=${LOBBY_DB_NAME}
+        - eureka__client__serviceUrl__defaultZone=http://discovery:8761/eureka/
+        - spring__application__name=lobby
+        - EUREKA_URL=http://discovery:8761/eureka/
+        - APP_NAME=lobby
+        - PORT=8080
+        - SERVICE_HOSTNAME=lobby-service
+
       depends_on:
         lobby_postgres:
           condition: service_healthy
@@ -237,6 +265,12 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=map_postgres;Port=5432;Database=${MAP_DB_NAME};Username=${MAP_DB_USER};Password=${MAP_DB_PASSWORD}
+      - eureka__client__serviceUrl__defaultZone=http://discovery:8761/eureka/
+      - spring__application__name=map
+      - EUREKA_URL=http://discovery:8761/eureka/
+      - APP_NAME=map
+      - PORT=8080
+      - SERVICE_HOSTNAME=map-service
     depends_on:
       map_postgres:
         condition: service_healthy
@@ -273,6 +307,14 @@ services:
     environment:
       - DB_CONNECTION_STRING=Host=ghost_postgres;Port=5432;Database=${GHOST_POSTGRES_DB};Username=${GHOST_POSTGRES_USER};Password=${GHOST_POSTGRES_PASSWORD}
       - ASPNETCORE_URLS=http://+:4001
+      - EUREKA_URL=http://discovery:8761/eureka/
+      - APP_NAME=ghost
+      - PORT=4001
+      - SERVICE_HOSTNAME=ghost-service
+      # If using eureka-js-client:
+      - EUREKA_HOST=discovery
+      - EUREKA_PORT=8761
+      - EUREKA_SERVICE_PATH=/eureka/apps/
     depends_on:
       ghost_postgres:
         condition: service_healthy
@@ -308,6 +350,13 @@ services:
       - LOCATION_REDIS_PORT=6379
       - LOCATION_REDIS_PASSWORD=${LOCATION_REDIS_PASSWORD}
       - NODE_ENV=production
+      - EUREKA_URL=http://discovery:8761/eureka/
+      - APP_NAME=location
+      - PORT=4002
+      - SERVICE_HOSTNAME=location-service
+      - EUREKA_HOST=discovery
+      - EUREKA_PORT=8761
+      - EUREKA_SERVICE_PATH=/eureka/apps/
 #      - ASPNETCORE_URLS=http://+:4002
     depends_on:
       location_redis:
@@ -344,22 +393,22 @@ services:
       - app-net
 
   chat-service:
-      image: dgliga/chat-service:latest
-      #container_name: chat_service
-      env_file: .env
-      environment:
-        DATABASE_URL: "mysql+pymysql://${CHAT_MYSQL_USER}:${CHAT_MYSQL_PASSWORD}@chat_db:3306/${CHAT_MYSQL_DATABASE}?charset=utf8mb4"
-        SEED_TOKEN: ${CHAT_SEED_TOKEN}
-      depends_on:
-        chat_db:
-          condition: service_healthy
-      #ports:
-        #- "8001:8000"
-      expose:
-      - "8000"
-      networks:
-        - app-net
-      restart: unless-stopped
+    image: dgliga/chat-service:latest
+    env_file: .env
+    environment:
+      DATABASE_URL: "mysql+pymysql://${CHAT_MYSQL_USER}:${CHAT_MYSQL_PASSWORD}@chat_db:3306/${CHAT_MYSQL_DATABASE}?charset=utf8mb4"
+      SEED_TOKEN: ${CHAT_SEED_TOKEN}
+      EUREKA_URL: http://discovery:8761/eureka/
+      APP_NAME: chat
+      PORT: 8000
+      SERVICE_HOSTNAME: chat-service
+    depends_on:
+      chat_db:
+        condition: service_healthy
+    expose: ["8000"]
+    networks: [app-net]
+    restart: unless-stopped
+
 
   # --- INVENTORY (FastAPI) ---
   inventory-db:
@@ -387,35 +436,45 @@ services:
     restart: unless-stopped
 
   inventory-service:
-      image: dgliga/inventory-service:latest
-      #container_name: inventory_service
-      command: >
-        sh -c "echo 'Waiting for MySQL...' &&
-               sleep 10 &&
-               uvicorn main:app --host 0.0.0.0 --port 8000"
-      environment:
-        DATABASE_URL: "mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@inventory-db:3306/${MYSQL_DATABASE}?charset=utf8mb4"
-        SEED_TOKEN: ${SEED_TOKEN}
-      depends_on:
-        inventory-db:
-          condition: service_healthy
-  #    ports:
-   #     - "8000:8000"
-      expose:
-        - "8000"
-      networks:
-        - app-net
+    image: dgliga/inventory-service:latest
+    command: >
+      sh -c "echo 'Waiting for MySQL...' &&
+             sleep 10 &&
+             uvicorn main:app --host 0.0.0.0 --port 8000"
+    environment:
+      - DATABASE_URL=mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@inventory-db:3306/${MYSQL_DATABASE}?charset=utf8mb4
+      - SEED_TOKEN=${SEED_TOKEN}
+      # 👇 Eureka registrar in your FastAPI main.py uses these
+      - EUREKA_URL=http://discovery:8761/eureka/
+      - APP_NAME=inventory
+      - PORT=8000
+      - SERVICE_HOSTNAME=inventory-service
+    depends_on:
+      discovery:
+        condition: service_started
+      inventory-db:
+        condition: service_healthy
+    expose: ["8000"]
+    networks: [app-net]
+    restart: unless-stopped
 
   # --- API GATEWAY (Spring Boot) ---
   api-gateway:
-    build:
-      context: ./GhostHunters_GatewayService/gateway
-      dockerfile: Dockerfile
+    #build:
+     # context: ./GhostHunters_GatewayService/gateway
+     # dockerfile: Dockerfile
+    image: dgliga/gateway-service:latest 
    # container_name: api-gateway
     env_file: .env
     environment:
       - SPRING_APPLICATION_NAME=api-gateway
       - SERVER_PORT=8090
+
+            # ✅ Enable Gateway <-> Eureka integration (if the gateway has the client on classpath)
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery:8761/eureka/
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_ENABLED=true
+      - SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_LOWERCASESERVICEID=true
       
       - USER_SERVICE_URL=http://usermanagement-service:5170
       - GHOSTAI_SERVICE_URL=http://ghostai-service:8080
@@ -429,6 +488,7 @@ services:
       - LOBBY_SERVICE_URL=http://lobby-service:8080
     
     depends_on:
+      - discovery 
       - usermanagement-service
       - ghostai-service
       - web-journal
