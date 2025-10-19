@@ -60,7 +60,7 @@ services:
       - app-net
 
   ghostai-service:
-    image: arinyan/ghostai-service:3.8
+    image: arinyan/ghostai-service:4.1
     env_file: .env
     environment:
       - DB_CONNECTION_STRING=Host=postgres-ghostai;Port=5432;Database=${GHOSTAI_POSTGRES_DB};Username=${GHOSTAI_POSTGRES_USER};Password=${GHOSTAI_POSTGRES_PASSWORD}
@@ -172,7 +172,7 @@ services:
       - app-net
 
   lobby-service:
-      image: zagorodniuchka/lobby-service:2.1
+      image: zagorodniuchka/lobby-service:2.2
      # container_name: lobby-service
       platform: linux/arm64
       env_file: .env
