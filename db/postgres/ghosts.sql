@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS ghost_types (
 CREATE TABLE IF NOT EXISTS type_a_symptoms (
                                                id SERIAL PRIMARY KEY,
                                                ghost_type_id INT NOT NULL REFERENCES ghost_types(id) ON DELETE CASCADE,
-                                               description TEXT NOT NULL
+                                               evidence TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS type_b_symptoms (
@@ -49,32 +49,37 @@ DO $$
         END IF;
 
         -- ✅ Type A: Evidences / sensory cues
-        INSERT INTO type_a_symptoms (ghost_type_id, description)
-        SELECT gt.id, a.description
+        INSERT INTO type_a_symptoms (ghost_type_id, evidence)
+        SELECT gt.id, evid.evidence
         FROM ghost_types gt
-                 JOIN (
+        JOIN (
             VALUES
-                ('Spirit','EMF Level 5'), ('Spirit','Ghost Writing'), ('Spirit','Spirit Box Response'), ('Spirit','Cold Spots'),
-                ('Wraith','No Footsteps'), ('Wraith','Flight Through Walls'), ('Wraith','UV Footprint Absence'), ('Wraith','High EMF Surge'),
-                ('Phantom','Disappears When Photographed'), ('Phantom','Apparition Shadow'), ('Phantom','Extended Flicker Time'), ('Phantom','Heavy Air Pressure'),
-                ('Poltergeist','Object Movement'), ('Poltergeist','Multiple Objects Thrown'), ('Poltergeist','Random Temperature Spikes'), ('Poltergeist','Sudden Sound Bursts'),
-                ('Banshee','Screeching Sound'), ('Banshee','EMF Level 4-5 Spikes'), ('Banshee','Appears Near Target'), ('Banshee','Directional Screams'),
-                ('Jinn','Power Surge Near Breaker'), ('Jinn','Temperature Fluctuation'), ('Jinn','Fast EMF Response'), ('Jinn','Humming Sound'),
-                ('Mare','Prefers Darkness'), ('Mare','Turns Lights Off'), ('Mare','Causes Nightmares'), ('Mare','Dark Aura Visible'),
-                ('Revenant','Slow When Idle'), ('Revenant','Fast When Chasing'), ('Revenant','Distinct Breathing'), ('Revenant','Heavy Footsteps'),
-                ('Shade','Minimal Activity in Groups'), ('Shade','Silent Presence'), ('Shade','Low EMF Reading'), ('Shade','Appears Rarely'),
-                ('Demon','Early Hunts'), ('Demon','Frequent Roars'), ('Demon','Strong EMF 5'), ('Demon','Aggressive Manifestations'),
-                ('Yurei','Rapid Sanity Drain'), ('Yurei','Door Slamming'), ('Yurei','Faint Moaning'), ('Yurei','Cold Air Burst'),
-                ('Oni','Throws Objects Forcefully'), ('Oni','Visible Apparition'), ('Oni','Active Around Groups'), ('Oni','Footsteps Heard Far Away'),
-                ('Yokai','Interferes with Electronics'), ('Yokai','Loud Radio Distortion'), ('Yokai','Triggered by Talking'), ('Yokai','Distorted Voices'),
-                ('Hantu','Visible Cold Mist'), ('Hantu','Moves Faster in Cold'), ('Hantu','Leaves Frost Trail'), ('Hantu','Ice Breath Detected'),
-                ('Goryo','Visible on Camera Only'), ('Goryo','Infrared Distortion'), ('Goryo','Refuses to Appear to Players'), ('Goryo','Distinct Growl'),
-                ('Myling','Whispering Childlike Voice'), ('Myling','Footsteps Audible on Parabolic'), ('Myling','EMF Flicker at Close Range'), ('Myling','Weeping Sounds'),
-                ('Onryo','Triggered by Fire Extinction'), ('Onryo','Strong EMF Bursts'), ('Onryo','Distorted Screams'), ('Onryo','Candle Flicker Interaction'),
-                ('The Twins','Two EMF Sources'), ('The Twins','Desynchronized Noises'), ('The Twins','Cold Spots in Two Areas'), ('The Twins','Simultaneous Door Touches'),
-                ('Raiju','Electronics Malfunction'), ('Raiju','Lightning-Like Energy Field'), ('Raiju','Fast Movement During Storm'), ('Raiju','Fluctuating EMF Zones'),
-                ('Mimic','Copies Voices'), ('Mimic','Adapts EMF Pattern'), ('Mimic','Mirrors Ghost Evidence'), ('Mimic','Unpredictable Behavior')
-        ) AS a(ghost_name, description) ON gt.name = a.ghost_name;
+                -- Name, Evidence 1, 2, 3 (three evidences per ghost)
+                ('Spirit','EMF','Spirit Box','Ghost Writing'),
+                ('Wraith','EMF','Spirit Box','D.O.T.S'),
+                ('Phantom','Spirit Box','D.O.T.S','Orbs'),
+                ('Poltergeist','Spirit Box','Fingerprints','Ghost Writing'),
+                ('Banshee','Orbs','D.O.T.S','Fingerprints'),
+                ('Jinn','EMF','Freezing','Fingerprints'),
+                ('Mare','Spirit Box','Orbs','Ghost Writing'),
+                ('Revenant','Freezing','Orbs','Ghost Writing'),
+                ('Shade','EMF','Freezing','Ghost Writing'),
+                ('Demon','Freezing','Fingerprints','Ghost Writing'),
+                ('Yurei','Freezing','Orbs','D.O.T.S'),
+                ('Oni','EMF','Freezing','D.O.T.S'),
+                ('Yokai','Spirit Box','Orbs','D.O.T.S'),
+                ('Hantu','Freezing','Orbs','Fingerprints'),
+                ('Goryo','EMF','Fingerprints','D.O.T.S'),
+                ('Myling','EMF','Fingerprints','Ghost Writing'),
+                ('Onryo','Freezing','Spirit Box','Orbs'),
+                ('The Twins','EMF','Spirit Box','Freezing'),
+                ('Raiju','EMF','Orbs','D.O.T.S'),
+                ('Mimic','Spirit Box','Fingerprints','Freezing')
+        ) AS e(ghost_name, evidence1, evidence2, evidence3)
+             ON gt.name = e.ghost_name
+        CROSS JOIN LATERAL (
+            VALUES (e.evidence1), (e.evidence2), (e.evidence3)
+            ) AS evid(evidence);
 
         -- ✅ Type B: Behavioral patterns
         INSERT INTO type_b_symptoms (ghost_type_id, description)
