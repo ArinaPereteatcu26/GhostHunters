@@ -11,9 +11,9 @@ CREATE TABLE IF NOT EXISTS statuses (
 CREATE TABLE IF NOT EXISTS lobbies (
                                        id SERIAL PRIMARY KEY,
                                        difficulty_id INT NOT NULL,
-                                       ghost_type_id INT NOT NULL,
+                                       ghost_type_id INT,
                                        map_id INT NOT NULL,
-                                       status_id INT NOT NULL,
+                                       status_id INT DEFAULT 1,
                                        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                        ended_at TIMESTAMP,
                                        FOREIGN KEY (difficulty_id) REFERENCES difficulties(id) ON DELETE RESTRICT,
