@@ -129,39 +129,39 @@ services:
     restart: unless-stopped
 
   # --- JOURNAL (FastAPI) ---
-#  journal_db:
-#    image: postgres:15-alpine
-#    container_name: journal_db
-#    environment:
-#      POSTGRES_USER: ${JOURNAL_POSTGRES_USER}
-#      POSTGRES_PASSWORD: ${JOURNAL_POSTGRES_PASSWORD}
-#      POSTGRES_DB: ${JOURNAL_POSTGRES_DB}
-#    volumes:
-#      - journal-data:/var/lib/postgresql/data
-#      - ./db/postgres/journal.sql:/docker-entrypoint-initdb.d/journal.sql:ro
-#    networks:
-#      - app-net
-#    healthcheck:
-#      test: ["CMD-SHELL", "pg_isready -U ${JOURNAL_POSTGRES_USER} -d ${JOURNAL_POSTGRES_DB}"]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 5
-#
-#  web-journal:
-#    image: aburdui/journal-service:2.5
-#    #container_name: journal-service
-#    env_file: .env
-#    environment:
-#    - DATABASE_URL=postgresql://${JOURNAL_POSTGRES_USER}:${JOURNAL_POSTGRES_PASSWORD}@journal_db:5432/${JOURNAL_POSTGRES_DB}
-#    depends_on:
-#      journal_db:
-#        condition: service_healthy
-#    #ports:
-#     # - "8003:8000"
-#    expose:
-#      - "8000"
-#    networks:
-#      - app-net
+  journal_db:
+    image: postgres:15-alpine
+    container_name: journal_db
+    environment:
+      POSTGRES_USER: ${JOURNAL_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${JOURNAL_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${JOURNAL_POSTGRES_DB}
+    volumes:
+      - journal-data:/var/lib/postgresql/data
+      - ./db/postgres/journal.sql:/docker-entrypoint-initdb.d/journal.sql:ro
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${JOURNAL_POSTGRES_USER} -d ${JOURNAL_POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web-journal:
+    image: aburdui/journal-service:2.5
+    #container_name: journal-service
+    env_file: .env
+    environment:
+    - DATABASE_URL=postgresql://${JOURNAL_POSTGRES_USER}:${JOURNAL_POSTGRES_PASSWORD}@journal_db:5432/${JOURNAL_POSTGRES_DB}
+    depends_on:
+      journal_db:
+        condition: service_healthy
+    #ports:
+     # - "8003:8000"
+    expose:
+      - "8000"
+    networks:
+      - app-net
 
     # --- LOBBY (.NET) ---
   lobby_postgres:
@@ -187,7 +187,7 @@ services:
       - app-net
 
   lobby-service:
-      image: zagorodniuchka/lobby-service:2.3
+      image: zagorodniuchka/lobby-service:2.2
      # container_name: lobby-service
       platform: linux/arm64
       env_file: .env
@@ -267,7 +267,7 @@ services:
       retries: 5
 
   ghost-service:
-    image: katrincik123/ghost-service:1.8
+    image: katrincik123/ghost-service:1.3
     #container_name: ghost-service
     env_file: .env
     environment:
@@ -276,8 +276,6 @@ services:
     depends_on:
       ghost_postgres:
         condition: service_healthy
-      lobby-service:
-        condition: service_started
     #ports:
      # - "4001:4001"
     expose:
@@ -433,7 +431,7 @@ services:
     depends_on:
       - usermanagement-service
       - ghostai-service
-#      - web-journal
+      - web-journal
       - location-service
       - ghost-service
       - web-shop
@@ -452,7 +450,7 @@ volumes:
   postgres-users-data:
   postgres-ghostai-data:
   postgres-map-data:
-#  journal-data:
+  journal-data:
   shop-data:
   ghost-data:
   ghost-redisdata:
