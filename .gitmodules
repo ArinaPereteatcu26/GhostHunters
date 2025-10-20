@@ -32,3 +32,6 @@
 [submodule "Map-Service"]
 	path = Map-Service
 	url = https://github.com/zagorodniuchka/Map-Service.git
+[submodule "DiscoveryService"]
+	path = DiscoveryService
+	url = https://github.com/Katrincik/GhostHunters_DiscoveryService.git
