@@ -40,7 +40,7 @@ INSERT INTO entries (lobby_id, user_id, evidence) VALUES
 INSERT INTO guesses (lobby_id, user_id, guess_ghost_type, is_correct, reward_currency)
 VALUES
 -- Lobby 1: Player guessed correctly → Revenant
-(1, 101, 'Revenant', TRUE, 80, 40),
+(1, 101, 'Revenant', TRUE, 80),
 
 -- Lobby 2: Player guessed wrong → they had Banshee but guessed Phantom
-(2, 102, 'Phantom', FALSE, 10, 5);
+(2, 102, 'Phantom', FALSE, 10);
