@@ -43,7 +43,7 @@ services:
       retries: 5
 
   usermanagement-service:
-    image: arinyan/usermanagement-service:v3.2.3
+    image: arinyan/usermanagement-service:v3.2.9
     #container_name: usermanagement-service
     env_file: .env
     environment:
@@ -83,10 +83,10 @@ services:
       - app-net
 
   ghostai-service:
-    image: arinyan/ghostai-service:v4.4.1
+    image: arinyan/ghostai-service:v3.3.3
     env_file: .env
     environment:
-      - DB_CONNECTION_STRING=Host=postgres-ghostai;Port=5432;Database=${GHOSTAI_POSTGRES_DB};Username=${GHOSTAI_POSTGRES_USER};Password=${GHOSTAI_POSTGRES_PASSWORD}
+      - ConnectionStrings__DefaultConnection=Host=postgres-ghostai;Port=5432;Database=${GHOSTAI_POSTGRES_DB};Username=${GHOSTAI_POSTGRES_USER};Password=${GHOSTAI_POSTGRES_PASSWORD}
       - ASPNETCORE_URLS=http://+:8080
       - eureka__client__serviceUrl__defaultZone=http://discovery:8761/eureka/
       - spring__application__name=ghostai
@@ -164,7 +164,7 @@ services:
       retries: 5
 
   web-journal:
-    image: aburdui/journal-service:v2.7.1
+    image: aburdui/journal-service:latest
     #container_name: journal-service
     env_file: .env
     environment:
