@@ -25,7 +25,7 @@
 [submodule "GhostHunters_GatewayService"]
     path = GhostHunters_GatewayService
     url = https://github.com/Katrincik/GhostHunters_GatewayService.git
-    branch = gatewayRequests
+    branch = main
 [submodule "Lobby-Service"]
 	path = Lobby-Service
 	url = https://github.com/zagorodniuchka/Lobby-Service.git
