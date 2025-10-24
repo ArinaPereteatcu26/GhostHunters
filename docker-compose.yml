@@ -5,7 +5,10 @@ networks:
 
 services:
   discovery:
-    image: dgliga/discovery-service:v1.1.3
+    image: dgliga/discovery-service:v1.1.5
+#    build:
+#      context: ./DiscoveryService/discovery-server
+#      dockerfile: Dockerfile
     environment:
       - JAVA_TOOL_OPTIONS=-Xms256m -Xmx512m
       - EUREKA_SERVER_ENABLE_SELF_PRESERVATION=false
@@ -43,7 +46,7 @@ services:
       retries: 5
 
   usermanagement-service:
-    image: arinyan/usermanagement-service:v3.2.9
+    image: arinyan/usermanagement-service:v3.3.1
     #container_name: usermanagement-service
     env_file: .env
     environment:
@@ -300,7 +303,7 @@ services:
       retries: 5
 
   ghost-service:
-    image: katrincik123/ghost-service:2.7
+    image: katrincik123/ghost-service:2.8
     #container_name: ghost-service
     env_file: .env
     environment:
@@ -341,7 +344,7 @@ services:
       retries: 5
 
   location-service:
-    image: katrincik123/location-service:1.3.4
+    image: katrincik123/location-service:1.3.5
     #container_name: location-service
     env_file: .env
     environment:
