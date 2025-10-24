@@ -5,10 +5,10 @@ networks:
 
 services:
   discovery:
-#    image: dgliga/discovery-service:v1.1.5
-    build:
-      context: ./DiscoveryService/discovery-server
-      dockerfile: Dockerfile
+    image: dgliga/discovery-service:v1.1.5
+#    build:
+ #     context: ./DiscoveryService/discovery-server
+  #    dockerfile: Dockerfile
     environment:
       - JAVA_TOOL_OPTIONS=-Xms256m -Xmx512m
       - EUREKA_SERVER_ENABLE_SELF_PRESERVATION=false
