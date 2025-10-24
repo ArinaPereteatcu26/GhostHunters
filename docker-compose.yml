@@ -5,7 +5,7 @@ networks:
 
 services:
   discovery:
-    image: dgliga/discovery-service:latest
+    image: dgliga/discovery-service:v1.1.3
     environment:
       - JAVA_TOOL_OPTIONS=-Xms256m -Xmx512m
       - EUREKA_SERVER_ENABLE_SELF_PRESERVATION=false
@@ -331,7 +331,7 @@ services:
     command: [ "redis-server", "--requirepass", "${LOCATION_REDIS_PASSWORD}" ]
     volumes:
       - ghost-redisdata:/data
-      - ./db/redis/redis_init_location.redis:/tmp/init.redis:ro
+#      - ./db/redis/redis_init_location.redis:/tmp/init.redis:ro
     networks:
       - app-net
     healthcheck:
@@ -360,15 +360,15 @@ services:
     depends_on:
       location_redis:
         condition: service_healthy
-    volumes:
-      - ./db/redis/redis_init_location.redis:/tmp/init.redis:ro
-    entrypoint: >
-      sh -c "
-        echo 'Waiting 3s for Redis to be ready...' &&
-        sleep 3 &&
-        redis-cli -h location_redis -a ${LOCATION_REDIS_PASSWORD} < /tmp/init.redis &&
-        echo '✅ Redis data imported successfully.'
-      "
+#    volumes:
+#      - ./db/redis/redis_init_location.redis:/tmp/init.redis:ro
+#    entrypoint: >
+#      sh -c "
+#        echo 'Waiting 3s for Redis to be ready...' &&
+#        sleep 3 &&
+#        redis-cli -h location_redis -a ${LOCATION_REDIS_PASSWORD} < /tmp/init.redis &&
+#        echo '✅ Redis data imported successfully.'
+#      "
     #ports:
     #  - "4002:4002"
     expose:
@@ -471,7 +471,7 @@ services:
 #    build:
 #      context: ./GhostHunters_GatewayService/gateway
 #      dockerfile: Dockerfile
-    image: dgliga/gateway-service:latest
+    image: dgliga/gateway-service:v1.1.7
     # container_name: api-gateway
     env_file: .env
     environment:
