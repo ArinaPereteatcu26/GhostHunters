@@ -129,7 +129,7 @@ services:
       - app-net
 
   web-shop:
-    image: aburdui/shop-service:2.9.2
+    image: aburdui/shop-service:2.9.3
     #container_name: web-shop
     env_file: .env
     environment:
