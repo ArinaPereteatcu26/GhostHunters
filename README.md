@@ -51,6 +51,40 @@ docker-compose up -d --build
 - Inventory Service: http://localhost:8000
 - Chat Service: http://localhost:8001
 
+### API Gateway
+
+The API Gateway consolidates all service endpoints through a unified entry point at `http://localhost:8080`.
+
+#### Public Gateway Endpoints
+
+External-facing routes accessible by client applications:
+
+| Endpoint | Target Service | Description |
+|----------|----------------|-------------|
+| `http://localhost:8080/users/api/users` | User Management | User management operations |
+| `http://localhost:8080/ghostai/ghoststates` | Ghost AI | Ghost state information |
+| `http://localhost:8080/journal/journal/1/entries` | Journal | Journal entries access |
+| `http://localhost:8080/ghost/ghosts` | Ghost Service | Ghost encyclopedia |
+| `http://localhost:8080/shop/shop/items` | Shop | Shop item catalog |
+| `http://localhost:8080/inventory/inventory` | Inventory | Inventory management |
+| `http://localhost:8080/chat/messages` | Chat | Chat messaging |
+
+#### Service-to-Service Routes
+
+Internal communication routes between microservices:
+
+| Route | Source → Target | Purpose |
+|-------|-----------------|---------|
+| `http://localhost:8080/inventory/1/profile` | Inventory → User Management | Fetch user profile for inventory operations |
+| `http://localhost:8080/lobby/users/2` | Lobby → User Management | Get user data for lobby sessions |
+| `http://localhost:8080/journal/ghosts/1` | Journal → Ghost Service | Validate ghost types for scoring |
+| `http://localhost:8080/shop/users/2/currency` | Shop → User Management | Check user currency for purchases |
+| `http://localhost:8080/lobby/inventory/1` | Lobby → Inventory | Sync item states with active sessions |
+| `http://localhost:8080/lobby/journal/init/1` | Lobby → Journal | Initialize investigation records |
+| `http://localhost:8080/ghostai/chat/mute/1` | Ghost AI → Chat | Apply haunting communication restrictions |
+
+**Note:** Service-to-service routes are not exposed to external clients and are used exclusively for internal microservice communication.
+
 ## Services on Docker Hub
 
 You can find the Docker images for our services here:
