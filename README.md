@@ -892,6 +892,56 @@ WebSocket-based connections for **instant feedback**.
 
 The Game Client communicates through a centralized API Gateway that manages interactions between three main service clusters. The User & Commerce domain forms a tightly integrated group where the User Management Service, Shop Service, and Inventory Service work together through their respective databases to handle player authentication, transactions, and asset management. The Content Management cluster operates somewhat independently, with the Map Service managing game world data and the Ghost Service handling gameplay recordings or AI opponents, both feeding into a shared Ghost DB. The Real-Time Systems domain handles live gameplay through the Location Service and Chat Service with their dedicated databases. The Lobby Service acts as a central coordination hub, interfacing with multiple services including the Ghost AI Service, which uniquely bridges different domains by connecting to both the Journal Service (for event logging) and various gameplay services. The Journal Service serves as a cross-cutting logging system that captures events from the game logic layer, creating an audit trail that spans multiple service boundaries. This architecture demonstrates loose coupling between service domains while maintaining necessary data consistency through dedicated databases and careful service-to-service communication patterns.
 
+### Gateway Routing Configuration
+
+All external and internal service communication is routed through an API Gateway at `http://localhost:8080`. This centralized approach provides:
+
+- **Unified Entry Point:** Single access point for all client applications
+- **Service Discovery:** Automatic routing to healthy service instances
+- **Load Balancing:** Distributes requests across multiple service replicas
+- **Authentication & Authorization:** Centralized security middleware
+- **Rate Limiting:** Prevents service abuse and ensures fair resource allocation
+- **Request/Response Transformation:** Standardizes data formats across services
+- **Logging & Monitoring:** Centralized observability for all API traffic
+- **Circuit Breaking:** Prevents cascading failures across services
+
+#### Gateway Route Pattern
+
+All routes follow a consistent pattern:
+```
+http://localhost:8080/{service-name}/{endpoint-path}
+```
+
+**Examples:**
+
+- **External Client Request:**
+```
+  GET http://localhost:8080/users/api/users
+  → Routes to User Management Service at http://localhost:5169/api/users
+```
+
+- **Internal Service-to-Service:**
+```
+  GET http://localhost:8080/inventory/1/profile
+  → Inventory Service calls User Management Service
+  → Gateway routes to http://localhost:5169/users/1/profile
+```
+
+#### Security Considerations
+
+- **External Routes:** Require valid JWT tokens in Authorization header
+- **Internal Routes:** Use service-to-service authentication tokens
+- **Rate Limits:** 
+  - External: 100 requests/minute per user
+  - Internal: 1000 requests/minute per service
+- **CORS:** Configured for allowed client origins only
+
+#### Monitoring & Health Checks
+
+The gateway exposes monitoring endpoints:
+
+- `http://localhost:8080/health` - Gateway health status
+- `http://localhost:8080/metrics` - Prometheus-compatible metrics
 
 ## Communication Contract & Data Management
 
