@@ -35,3 +35,6 @@
 [submodule "DiscoveryService"]
 	path = DiscoveryService
 	url = https://github.com/Katrincik/GhostHunters_DiscoveryService.git
+[submodule "MessageBroker"]
+	path = MessageBroker
+	url = https://github.com/Katrincik/GhostHunters_MessageBroker.git
