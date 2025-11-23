@@ -4,6 +4,25 @@ networks:
     name: app-net
 
 services:
+
+  messagebroker:
+    image: rabbitmq:3-management
+    container_name: messagebroker
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - "5672:5672"     # Broker
+      - "15672:15672"   # Web UI
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app-net
+    restart: unless-stopped
+
   discovery:
     image: dgliga/discovery-service:v1.1.5
 #    build:
