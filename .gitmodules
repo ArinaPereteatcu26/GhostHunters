@@ -7,9 +7,11 @@
 [submodule "GhostService"]
 	path = GhostService
 	url = https://github.com/Katrincik/GhostHunters_GhostService.git
+	branch = main
 [submodule "LocationService"]
 	path = LocationService
 	url = https://github.com/Katrincik/GhostHunters_LocationService.git
+	branch = main
 [submodule "Ghost-AI-Service"]
 	path = Ghost-AI-Service
 	url = https://github.com/ArinaPereteatcu26/GhostAiService.git
