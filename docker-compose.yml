@@ -15,7 +15,7 @@ services:
       - "5672:5672"     # AMQP
       - "15672:15672"   # RabbitMQ UI
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "status"]
+      test: [ "CMD", "rabbitmq-diagnostics", "status" ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -25,7 +25,10 @@ services:
 
   messagebroker:
     container_name: message-broker
-    image: katrincik123/message-broker:v1.0.4
+#    image: katrincik123/message-broker:v1.0.5
+    build:
+      context: ./MessageBroker
+      dockerfile: Dockerfile
     environment:
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_PORT=5672
@@ -35,7 +38,13 @@ services:
       rabbitmq:
         condition: service_healthy
     ports:
-      - "8082:8082"   # Broker HTTP API
+      - "8082:8082"
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health/readiness"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 20
+#      start_period: 40s
     networks:
       - app-net
     restart: unless-stopped
@@ -127,7 +136,7 @@ services:
       - app-net
 
   ghostai-service:
-    image: arinyan/ghostai-service:v3.4.2
+    image: arinyan/ghostai-service:v3.4.3
     env_file: .env
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres-ghostai;Port=5432;Database=${GHOSTAI_POSTGRES_DB};Username=${GHOSTAI_POSTGRES_USER};Password=${GHOSTAI_POSTGRES_PASSWORD}
@@ -170,7 +179,7 @@ services:
       - app-net
 
   web-shop:
-    image: aburdui/shop-service:3.0.0
+    image: aburdui/shop-service:3.0.1
     #container_name: web-shop
     env_file: .env
     environment:
@@ -213,7 +222,7 @@ services:
       retries: 5
 
   web-journal:
-    image: aburdui/journal-service:3.0.4
+    image: aburdui/journal-service:3.0.5
     #container_name: journal-service
     env_file: .env
     environment:
@@ -285,7 +294,7 @@ services:
     networks:
       - app-net
     restart: unless-stopped
-  
+
   # --- MAP SERVICE (.NET) ---
   map_postgres:
     image: postgres:15-alpine
@@ -333,7 +342,7 @@ services:
       - "8080"
     networks:
       - app-net
-  
+
   #--- GHOST (Node) ---
   ghost_postgres:
     image: postgres:15-alpine
@@ -371,6 +380,10 @@ services:
     depends_on:
       ghost_postgres:
         condition: service_healthy
+      messagebroker:
+        condition: service_started
+      discovery:
+        condition: service_started
       #ports:
       # - "4001:4001"
     deploy:
@@ -379,8 +392,8 @@ services:
       - "4001"
     networks:
       - app-net
-    
-    #--- LOCATION (Node) --- 
+
+    #--- LOCATION (Node) ---
   location_redis:
     image: redis:7-alpine
     container_name: location_redis
@@ -416,6 +429,10 @@ services:
     depends_on:
       location_redis:
         condition: service_healthy
+      messagebroker:
+        condition: service_started
+      discovery:
+        condition: service_started
     deploy:
       replicas: 3
 #    volumes:
@@ -554,7 +571,7 @@ services:
       - CHAT_SERVICE_URL=http://chat-service:8000
       - MAP_SERVICE_URL=http://map-service:8080
       - LOBBY_SERVICE_URL=http://lobby-service:8080
-    
+
     depends_on:
       - discovery
       - usermanagement-service
