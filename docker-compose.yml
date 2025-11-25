@@ -15,10 +15,11 @@ services:
       - "5672:5672"     # AMQP
       - "15672:15672"   # RabbitMQ UI
     healthcheck:
-      test: [ "CMD", "rabbitmq-diagnostics", "status" ]
+      test: [ "CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
       interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 20
+      start_period: 20s
     networks:
       - app-net
     restart: unless-stopped
@@ -50,7 +51,7 @@ services:
     restart: unless-stopped
 
   discovery:
-    image: dgliga/discovery-service:v1.2
+    image: dgliga/discovery-service:v1.2.1
 #    build:
  #     context: ./DiscoveryService/discovery-server
   #    dockerfile: Dockerfile
@@ -225,7 +226,7 @@ services:
       retries: 5
 
   web-journal:
-    image: aburdui/journal-service:3.0.5
+    image: aburdui/journal-service:3.0.6
     #container_name: journal-service
     env_file: .env
     environment:
@@ -271,7 +272,7 @@ services:
       - app-net
 
   lobby-service:
-    image: zagorodniuchka/lobby-service:v2.7
+    image: zagorodniuchka/lobby-service:v2.9
     # container_name: lobby-service
 #    platform: linux/arm64
     env_file: .env
