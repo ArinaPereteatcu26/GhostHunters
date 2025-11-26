@@ -7,7 +7,7 @@ services:
 
   messagebroker:
     container_name: message-broker
-#    image: katrincik123/message-broker:v1.0.6
+#    image: katrincik123/message-broker:v1.0.7
     build:
       context: ./MessageBroker
       dockerfile: Dockerfile
@@ -345,10 +345,10 @@ services:
       retries: 5
 
   ghost-service:
-#    image: katrincik123/ghost-service:3.1
-    build:
-      context: ./GhostService
-      dockerfile: Dockerfile
+    image: katrincik123/ghost-service:3.2
+#    build:
+#      context: ./GhostService
+#      dockerfile: Dockerfile
     env_file: .env
     environment:
       - DB_CONNECTION_STRING=Host=ghost_postgres;Port=5432;Database=${GHOST_POSTGRES_DB};Username=${GHOST_POSTGRES_USER};Password=${GHOST_POSTGRES_PASSWORD}
@@ -397,10 +397,10 @@ services:
       retries: 5
 
   location-service:
-    image: katrincik123/location-service:1.3.8
-    build:
-      context: ./LocationService
-      dockerfile: Dockerfile
+    image: katrincik123/location-service:1.4
+#    build:
+#      context: ./LocationService
+#      dockerfile: Dockerfile
     env_file: .env
     environment:
       - LOCATION_REDIS_HOST=location_redis
@@ -529,7 +529,7 @@ services:
     build:
       context: ./GhostHunters_GatewayService/gateway
       dockerfile: Dockerfile
-#    image: dgliga/gateway-service:v1.2.3
+#    image: dgliga/gateway-service:v1.2.4
     # container_name: api-gateway
     env_file: .env
     environment:
