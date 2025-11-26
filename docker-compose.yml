@@ -7,10 +7,10 @@ services:
 
   messagebroker:
     container_name: message-broker
-#    image: katrincik123/message-broker:v1.0.7
-    build:
-      context: ./MessageBroker
-      dockerfile: Dockerfile
+    image: katrincik123/message-broker:v1.0.9
+#    build:
+#      context: ./MessageBroker
+#      dockerfile: Dockerfile
     depends_on:
       - discovery
     ports:
@@ -26,10 +26,10 @@ services:
     restart: unless-stopped
 
   discovery:
-#    image: dgliga/discovery-service:v1.2.1
-    build:
-      context: ./DiscoveryService/discovery-server
-      dockerfile: Dockerfile
+    image: dgliga/discovery-service:v1.2.1
+#    build:
+#      context: ./DiscoveryService/discovery-server
+#      dockerfile: Dockerfile
     environment:
       - JAVA_TOOL_OPTIONS=-Xms256m -Xmx512m
       - EUREKA_SERVER_ENABLE_SELF_PRESERVATION=false
@@ -70,7 +70,7 @@ services:
       retries: 5
 
   usermanagement-service:
-    image: arinyan/usermanagement-service:v3.3.8
+    image: arinyan/usermanagement-service:v3.3.9
     #container_name: usermanagement-service
     env_file: .env
     environment:
@@ -113,7 +113,7 @@ services:
       - app-net
 
   ghostai-service:
-    image: arinyan/ghostai-service:v3.4.4
+    image: arinyan/ghostai-service:v3.4.5
     env_file: .env
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres-ghostai;Port=5432;Database=${GHOSTAI_POSTGRES_DB};Username=${GHOSTAI_POSTGRES_USER};Password=${GHOSTAI_POSTGRES_PASSWORD}
@@ -345,7 +345,7 @@ services:
       retries: 5
 
   ghost-service:
-    image: katrincik123/ghost-service:3.2
+    image: katrincik123/ghost-service:3.3
 #    build:
 #      context: ./GhostService
 #      dockerfile: Dockerfile
@@ -397,7 +397,7 @@ services:
       retries: 5
 
   location-service:
-    image: katrincik123/location-service:1.4
+    image: katrincik123/location-service:1.5
 #    build:
 #      context: ./LocationService
 #      dockerfile: Dockerfile
@@ -526,10 +526,10 @@ services:
 
   # --- API GATEWAY (Spring Boot) ---
   api-gateway:
-    build:
-      context: ./GhostHunters_GatewayService/gateway
-      dockerfile: Dockerfile
-#    image: dgliga/gateway-service:v1.2.4
+#    build:
+#      context: ./GhostHunters_GatewayService/gateway
+#      dockerfile: Dockerfile
+    image: dgliga/gateway-service:v1.2.4
     # container_name: api-gateway
     env_file: .env
     environment:
