@@ -70,7 +70,7 @@ services:
       retries: 5
 
   usermanagement-service:
-    image: arinyan/usermanagement-service:v3.3.9
+    image: arinyan/usermanagement-service:v3.4.2
     #container_name: usermanagement-service
     env_file: .env
     environment:
@@ -113,7 +113,7 @@ services:
       - app-net
 
   ghostai-service:
-    image: arinyan/ghostai-service:v3.4.5
+    image: arinyan/ghostai-service:v3.4.6
     env_file: .env
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres-ghostai;Port=5432;Database=${GHOSTAI_POSTGRES_DB};Username=${GHOSTAI_POSTGRES_USER};Password=${GHOSTAI_POSTGRES_PASSWORD}
@@ -526,9 +526,9 @@ services:
 
   # --- API GATEWAY (Spring Boot) ---
   api-gateway:
-#    build:
-#      context: ./GhostHunters_GatewayService/gateway
-#      dockerfile: Dockerfile
+   # build:
+    #  context: ./GhostHunters_GatewayService/gateway
+     # dockerfile: Dockerfile
     image: dgliga/gateway-service:v1.2.4
     # container_name: api-gateway
     env_file: .env
