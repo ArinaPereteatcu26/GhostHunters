@@ -7,10 +7,14 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management
+#    platform: linux/amd64
     container_name: rabbitmq
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
+#      - RABBITMQ_ERLANG_COOKIE=supersecretcookie
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
     ports:
       - "5672:5672"     # AMQP
       - "15672:15672"   # RabbitMQ UI
@@ -27,11 +31,11 @@ services:
 #      retries: 20
 #      start_period: 30s
     healthcheck:
-      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
-      interval: 10s
-      timeout: 5s
-      retries: 20
-      start_period: 30s
+      test: [ "CMD-SHELL", "rabbitmq-diagnostics -q ping || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
     networks:
       - app-net
     restart: unless-stopped
@@ -295,7 +299,7 @@ services:
       - DATABASE_URL=postgresql://${LOBBY_DB_USER}:${LOBBY_DB_PASSWORD}@lobby-postgres:5432/${LOBBY_DB_NAME}
       - POSTGRES_DB=${LOBBY_DB_NAME}
       - eureka__client__serviceUrl__defaultZone=http://discovery:8761/eureka/
-      - spring__application__name=lobby
+      - spring__application__name=lobby-service
       - EUREKA_URL=http://discovery:8761/eureka/
       - APP_NAME=lobby-service
       - PORT=8080
@@ -303,6 +307,8 @@ services:
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
     depends_on:
       lobby_postgres:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     deploy:
       replicas: 3
@@ -344,7 +350,7 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=map_postgres;Port=5432;Database=${MAP_DB_NAME};Username=${MAP_DB_USER};Password=${MAP_DB_PASSWORD}
       - eureka__client__serviceUrl__defaultZone=http://discovery:8761/eureka/
-      - spring__application__name=map
+      - spring__application__name=map-service
       - EUREKA_URL=http://discovery:8761/eureka/
       - APP_NAME=map-service
       - PORT=8080
@@ -352,6 +358,8 @@ services:
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
     depends_on:
       map_postgres:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     deploy:
       replicas: 3
@@ -561,6 +569,8 @@ services:
         condition: service_started
       inventory-db:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     deploy:
       replicas: 3
     expose: ["8000"]
@@ -627,3 +637,4 @@ volumes:
   lobby-postgres-data:
   mysql_chat_data:
   map_pgdata:
+  rabbitmq-data:
