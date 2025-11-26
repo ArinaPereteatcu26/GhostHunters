@@ -14,22 +14,34 @@ services:
     ports:
       - "5672:5672"     # AMQP
       - "15672:15672"   # RabbitMQ UI
+#    healthcheck:
+#      test: [ "CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 20
+#      start_period: 20s
+#    healthcheck:
+#      test: [ "CMD", "rabbitmqctl", "status" ]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 20
+#      start_period: 30s
     healthcheck:
-      test: [ "CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 20
-      start_period: 20s
+      start_period: 30s
     networks:
       - app-net
     restart: unless-stopped
 
   messagebroker:
     container_name: message-broker
-    image: katrincik123/message-broker:v1.0.6
-#    build:
-#      context: ./MessageBroker
-#      dockerfile: Dockerfile
+#    image: katrincik123/message-broker:v1.0.6
+    build:
+      context: ./MessageBroker
+      dockerfile: Dockerfile
     environment:
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_PORT=5672
@@ -51,10 +63,10 @@ services:
     restart: unless-stopped
 
   discovery:
-    image: dgliga/discovery-service:v1.2.1
-#    build:
- #     context: ./DiscoveryService/discovery-server
-  #    dockerfile: Dockerfile
+#    image: dgliga/discovery-service:v1.2.1
+    build:
+      context: ./DiscoveryService/discovery-server
+      dockerfile: Dockerfile
     environment:
       - JAVA_TOOL_OPTIONS=-Xms256m -Xmx512m
       - EUREKA_SERVER_ENABLE_SELF_PRESERVATION=false
@@ -182,7 +194,7 @@ services:
       - app-net
 
   web-shop:
-    image: aburdui/shop-service:3.0.1
+    image: aburdui/shop-service:3.0.2
     #container_name: web-shop
     env_file: .env
     environment:
@@ -226,7 +238,7 @@ services:
       retries: 5
 
   web-journal:
-    image: aburdui/journal-service:3.0.6
+    image: aburdui/journal-service:3.0.7
     #container_name: journal-service
     env_file: .env
     environment:
@@ -323,7 +335,7 @@ services:
       retries: 5
 
   map-service:
-    image: zagorodniuchka/map-service:v1.4
+    image: zagorodniuchka/map-service:v1.5
     #container_name: map-service
 #    platform: linux/arm64
     env_file: .env
@@ -557,10 +569,10 @@ services:
 
   # --- API GATEWAY (Spring Boot) ---
   api-gateway:
-#    build:
-#      context: ./GhostHunters_GatewayService/gateway
-#      dockerfile: Dockerfile
-    image: dgliga/gateway-service:v1.2.3
+    build:
+      context: ./GhostHunters_GatewayService/gateway
+      dockerfile: Dockerfile
+#    image: dgliga/gateway-service:v1.2.3
     # container_name: api-gateway
     env_file: .env
     environment:
