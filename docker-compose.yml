@@ -70,7 +70,7 @@ services:
       retries: 5
 
   usermanagement-service:
-    image: arinyan/usermanagement-service:v3.4.4
+    image: arinyan/usermanagement-service:v3.4.5
     #container_name: usermanagement-service
     env_file: .env
     environment:
