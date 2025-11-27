@@ -70,7 +70,7 @@ services:
       retries: 5
 
   usermanagement-service:
-    image: arinyan/usermanagement-service:v3.4.4
+    image: arinyan/usermanagement-service:v3.4.5
     #container_name: usermanagement-service
     env_file: .env
     environment:
@@ -247,7 +247,7 @@ services:
       - app-net
 
   lobby-service:
-    image: zagorodniuchka/lobby-service:v3.0
+    image: zagorodniuchka/lobby-service:v3.3
     # container_name: lobby-service
 #    platform: linux/arm64
     env_file: .env
@@ -500,6 +500,7 @@ services:
 
   inventory-service:
     image: dgliga/inventory-service:latest
+#    image: dgliga/inventory-service:v7.3.4
     command: >
       sh -c "echo 'Waiting for MySQL...' &&
              sleep 10 &&
@@ -526,10 +527,10 @@ services:
 
   # --- API GATEWAY (Spring Boot) ---
   api-gateway:
-   # build:
-    #  context: ./GhostHunters_GatewayService/gateway
-     # dockerfile: Dockerfile
-    image: dgliga/gateway-service:v1.2.4
+#    build:
+#      context: ./GhostHunters_GatewayService/gateway
+#      dockerfile: Dockerfile
+    image: dgliga/gateway-service:v1.2.7
     # container_name: api-gateway
     env_file: .env
     environment:
