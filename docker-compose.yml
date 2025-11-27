@@ -16,11 +16,11 @@ services:
     ports:
       - "8082:8082"
 #    healthcheck:
- #     test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health/readiness"]
- #     interval: 5s
- #     timeout: 3s
-#    retries: 20
- #     start_period: 40s
+#      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health/readiness"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 20
+#      start_period: 40s
     networks:
       - app-net
     restart: unless-stopped
@@ -70,7 +70,7 @@ services:
       retries: 5
 
   usermanagement-service:
-    image: arinyan/usermanagement-service:v3.4.5
+    image: arinyan/usermanagement-service:v3.4.6
     #container_name: usermanagement-service
     env_file: .env
     environment:
@@ -113,7 +113,7 @@ services:
       - app-net
 
   ghostai-service:
-    image: arinyan/ghostai-service:v3.4.7
+    image: arinyan/ghostai-service:v3.4.9
     env_file: .env
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres-ghostai;Port=5432;Database=${GHOSTAI_POSTGRES_DB};Username=${GHOSTAI_POSTGRES_USER};Password=${GHOSTAI_POSTGRES_PASSWORD}
@@ -128,8 +128,6 @@ services:
     depends_on:
       postgres-ghostai:
         condition: service_started
-    #  messagebroker:
-     #   condition: service_healthy
     deploy:
       replicas: 2
     expose:
@@ -347,7 +345,7 @@ services:
       retries: 5
 
   ghost-service:
-    image: katrincik123/ghost-service:3.3
+    image: katrincik123/ghost-service:3.4
 #    build:
 #      context: ./GhostService
 #      dockerfile: Dockerfile
@@ -502,7 +500,6 @@ services:
 
   inventory-service:
     image: dgliga/inventory-service:latest
-#    image: dgliga/inventory-service:v7.3.4
     command: >
       sh -c "echo 'Waiting for MySQL...' &&
              sleep 10 &&
@@ -529,9 +526,9 @@ services:
 
   # --- API GATEWAY (Spring Boot) ---
   api-gateway:
-#    build:
-#      context: ./GhostHunters_GatewayService/gateway
-#      dockerfile: Dockerfile
+   # build:
+    #  context: ./GhostHunters_GatewayService/gateway
+     # dockerfile: Dockerfile
     image: dgliga/gateway-service:v1.2.7
     # container_name: api-gateway
     env_file: .env
