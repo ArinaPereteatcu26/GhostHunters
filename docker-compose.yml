@@ -7,7 +7,7 @@ services:
 
   messagebroker:
     container_name: message-broker
-    image: katrincik123/message-broker:v1.0.9
+    image: katrincik123/message-broker:v1.1.0
 #    build:
 #      context: ./MessageBroker
 #      dockerfile: Dockerfile
@@ -70,7 +70,7 @@ services:
       retries: 5
 
   usermanagement-service:
-    image: arinyan/usermanagement-service:v3.4.6
+    image: arinyan/usermanagement-service:v3.4.9
     #container_name: usermanagement-service
     env_file: .env
     environment:
@@ -113,7 +113,7 @@ services:
       - app-net
 
   ghostai-service:
-    image: arinyan/ghostai-service:v3.4.9
+    image: arinyan/ghostai-service:v3.5.1
     env_file: .env
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres-ghostai;Port=5432;Database=${GHOSTAI_POSTGRES_DB};Username=${GHOSTAI_POSTGRES_USER};Password=${GHOSTAI_POSTGRES_PASSWORD}
@@ -157,7 +157,7 @@ services:
       - app-net
 
   web-shop:
-    image: aburdui/shop-service:3.0.2
+    image: aburdui/shop-service:3.0.4
     #container_name: web-shop
     env_file: .env
     environment:
@@ -201,7 +201,7 @@ services:
       retries: 5
 
   web-journal:
-    image: aburdui/journal-service:3.0.7
+    image: aburdui/journal-service:3.0.10
     #container_name: journal-service
     env_file: .env
     environment:
@@ -345,7 +345,7 @@ services:
       retries: 5
 
   ghost-service:
-    image: katrincik123/ghost-service:3.4
+    image: katrincik123/ghost-service:3.5
 #    build:
 #      context: ./GhostService
 #      dockerfile: Dockerfile
@@ -397,7 +397,7 @@ services:
       retries: 5
 
   location-service:
-    image: katrincik123/location-service:1.5
+    image: katrincik123/location-service:1.6
 #    build:
 #      context: ./LocationService
 #      dockerfile: Dockerfile
