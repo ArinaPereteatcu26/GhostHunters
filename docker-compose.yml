@@ -7,10 +7,10 @@ services:
 
   messagebroker:
     container_name: message-broker
-#    image: katrincik123/message-broker:v1.1.0
-    build:
-      context: ./MessageBroker
-      dockerfile: Dockerfile
+    image: katrincik123/message-broker:v1.1.1
+#    build:
+#      context: ./MessageBroker
+#      dockerfile: Dockerfile
     depends_on:
       - discovery
     ports:
@@ -526,10 +526,10 @@ services:
 
   # --- API GATEWAY (Spring Boot) ---
   api-gateway:
-    build:
-      context: ./GhostHunters_GatewayService/gateway
-      dockerfile: Dockerfile
-#    image: dgliga/gateway-service:v1.2.7
+#    build:
+#      context: ./GhostHunters_GatewayService/gateway
+#      dockerfile: Dockerfile
+    image: dgliga/gateway-service:v1.2.8
     # container_name: api-gateway
     env_file: .env
     environment:
