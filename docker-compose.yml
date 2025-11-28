@@ -350,7 +350,7 @@ services:
       retries: 5
 
   ghost-service:
-    image: katrincik123/ghost-service:3.6
+    image: katrincik123/ghost-service:3.7
 #    build:
 #      context: ./GhostService
 #      dockerfile: Dockerfile
@@ -402,7 +402,7 @@ services:
       retries: 5
 
   location-service:
-    image: katrincik123/location-service:1.7
+    image: katrincik123/location-service:1.8
 #    build:
 #      context: ./LocationService
 #      dockerfile: Dockerfile
@@ -534,7 +534,7 @@ services:
 #    build:
 #      context: ./GhostHunters_GatewayService/gateway
 #      dockerfile: Dockerfile
-    image: dgliga/gateway-service:v1.2.9
+    image: dgliga/gateway-service:v1.3.0
     # container_name: api-gateway
     env_file: .env
     environment:
