@@ -70,7 +70,7 @@ services:
       retries: 5
 
   usermanagement-service:
-    image: arinyan/usermanagement-service:v3.5.3
+    image: arinyan/usermanagement-service:v3.5.4
     #container_name: usermanagement-service
     env_file: .env
     environment:
@@ -113,7 +113,7 @@ services:
       - app-net
 
   ghostai-service:
-    image: arinyan/ghostai-service:v3.5.5
+    image: arinyan/ghostai-service:v3.5.6
     env_file: .env
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres-ghostai;Port=5432;Database=${GHOSTAI_POSTGRES_DB};Username=${GHOSTAI_POSTGRES_USER};Password=${GHOSTAI_POSTGRES_PASSWORD}
@@ -307,7 +307,7 @@ services:
       retries: 5
 
   map-service:
-    image: zagorodniuchka/map-service:v1.7
+    image: zagorodniuchka/map-service:v1.8
     #container_name: map-service
 #    platform: linux/arm64
     env_file: .env
