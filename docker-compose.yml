@@ -113,7 +113,7 @@ services:
       - app-net
 
   ghostai-service:
-    image: arinyan/ghostai-service:v3.5.2
+    image: arinyan/ghostai-service:v3.5.4
     env_file: .env
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres-ghostai;Port=5432;Database=${GHOSTAI_POSTGRES_DB};Username=${GHOSTAI_POSTGRES_USER};Password=${GHOSTAI_POSTGRES_PASSWORD}
@@ -201,7 +201,7 @@ services:
       retries: 5
 
   web-journal:
-    image: aburdui/journal-service:3.0.10
+    image: aburdui/journal-service:3.1.9
     #container_name: journal-service
     env_file: .env
     environment:
@@ -211,9 +211,14 @@ services:
       - PORT=8000
       - SERVICE_HOSTNAME=web-journal
       - BROKER_HTTP_URL=http://message-broker:8082
+      - TOPIC_SUBSCRIPTIONS=lobby.deleted,journal.init.requested,journal.guess.requested
     depends_on:
       journal_db:
         condition: service_healthy
+      messagebroker:
+        condition: service_started
+      discovery:
+        condition: service_started
     deploy:
       replicas: 2
       #ports:
@@ -247,7 +252,7 @@ services:
       - app-net
 
   lobby-service:
-    image: zagorodniuchka/lobby-service:v4.0
+    image: zagorodniuchka/lobby-service:v4.2
     # container_name: lobby-service
 #    platform: linux/arm64
     env_file: .env
@@ -529,7 +534,7 @@ services:
 #    build:
 #      context: ./GhostHunters_GatewayService/gateway
 #      dockerfile: Dockerfile
-    image: dgliga/gateway-service:v1.2.8
+    image: dgliga/gateway-service:v1.2.9
     # container_name: api-gateway
     env_file: .env
     environment:
@@ -554,6 +559,8 @@ services:
 
       - DISABLE_AUTH=false
       - JWT_SECRET=ghosthunters-0123456789-abcdef-12345678
+#      - JWT_SECRET=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZW1vLXVzZXIiLCJleHAiOjE3NjQzNDQwODJ9.mZr5yYO6K8niQOp46QHlBUiShoU2bxGb3drZlZjYTEk
+
 
 
     depends_on:
