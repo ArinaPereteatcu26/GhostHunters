@@ -70,7 +70,7 @@ services:
       retries: 5
 
   usermanagement-service:
-    image: arinyan/usermanagement-service:v3.4.9
+    image: arinyan/usermanagement-service:v3.5.3
     #container_name: usermanagement-service
     env_file: .env
     environment:
@@ -113,7 +113,7 @@ services:
       - app-net
 
   ghostai-service:
-    image: arinyan/ghostai-service:v3.5.4
+    image: arinyan/ghostai-service:v3.5.5
     env_file: .env
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres-ghostai;Port=5432;Database=${GHOSTAI_POSTGRES_DB};Username=${GHOSTAI_POSTGRES_USER};Password=${GHOSTAI_POSTGRES_PASSWORD}
@@ -157,7 +157,7 @@ services:
       - app-net
 
   web-shop:
-    image: aburdui/shop-service:3.0.4
+    image: aburdui/shop-service:3.1.0
     #container_name: web-shop
     env_file: .env
     environment:
@@ -171,6 +171,10 @@ services:
     depends_on:
       shop_db:
         condition: service_healthy
+      messagebroker:
+        condition: service_started
+      discovery:
+        condition: service_started
     deploy:
       replicas: 2
     #ports:
@@ -201,7 +205,7 @@ services:
       retries: 5
 
   web-journal:
-    image: aburdui/journal-service:3.1.9
+    image: aburdui/journal-service:3.2.0
     #container_name: journal-service
     env_file: .env
     environment:
@@ -211,7 +215,6 @@ services:
       - PORT=8000
       - SERVICE_HOSTNAME=web-journal
       - BROKER_HTTP_URL=http://message-broker:8082
-      - TOPIC_SUBSCRIPTIONS=lobby.deleted,journal.init.requested,journal.guess.requested
     depends_on:
       journal_db:
         condition: service_healthy
@@ -227,6 +230,7 @@ services:
       - "8000"
     networks:
       - app-net
+    restart: unless-stopped
 
     # --- LOBBY (.NET) ---
   lobby_postgres:
@@ -252,7 +256,7 @@ services:
       - app-net
 
   lobby-service:
-    image: zagorodniuchka/lobby-service:v4.2
+    image: zagorodniuchka/lobby-service:v4.4
     # container_name: lobby-service
 #    platform: linux/arm64
     env_file: .env
@@ -350,7 +354,7 @@ services:
       retries: 5
 
   ghost-service:
-    image: katrincik123/ghost-service:3.7
+    image: katrincik123/ghost-service:3.8
 #    build:
 #      context: ./GhostService
 #      dockerfile: Dockerfile
@@ -402,7 +406,7 @@ services:
       retries: 5
 
   location-service:
-    image: katrincik123/location-service:1.8
+    image: katrincik123/location-service:1.9
 #    build:
 #      context: ./LocationService
 #      dockerfile: Dockerfile
@@ -534,7 +538,7 @@ services:
 #    build:
 #      context: ./GhostHunters_GatewayService/gateway
 #      dockerfile: Dockerfile
-    image: dgliga/gateway-service:v1.3.0
+    image: dgliga/gateway-service:v1.3.3
     # container_name: api-gateway
     env_file: .env
     environment:
