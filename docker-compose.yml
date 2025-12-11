@@ -538,7 +538,7 @@ services:
 #    build:
 #      context: ./GhostHunters_GatewayService/gateway
 #      dockerfile: Dockerfile
-    image: dgliga/gateway-service:v1.3.3
+    image: dgliga/gateway-service:v1.3.11
     # container_name: api-gateway
     env_file: .env
     environment:
@@ -549,7 +549,6 @@ services:
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
       - SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_ENABLED=true
       - SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_LOWERCASESERVICEID=true
-
       - USER_SERVICE_URL=http://usermanagement-service:5170
       - GHOSTAI_SERVICE_URL=http://ghostai-service:8080
       - JOURNAL_SERVICE_URL=http://web-journal:8000
