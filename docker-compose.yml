@@ -535,10 +535,10 @@ services:
 
   # --- API GATEWAY (Spring Boot) ---
   api-gateway:
-#    build:
-#      context: ./GhostHunters_GatewayService/gateway
-#      dockerfile: Dockerfile
-    image: dgliga/gateway-service:v1.3.11
+    build:
+      context: ./GhostHunters_GatewayService/gateway
+      dockerfile: Dockerfile
+#    image: dgliga/gateway-service:v1.3.11
     # container_name: api-gateway
     env_file: .env
     environment:
