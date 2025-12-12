@@ -56,17 +56,47 @@ services:
   # --- USER MANAGEMENT (.NET) ---
 
   postgres-users:
-    image: postgres:15-alpine
+    image: bitnami/postgresql:latest
     container_name: postgres-users
     environment:
-      POSTGRES_USER: ${USER_DB_USER}
-      POSTGRES_PASSWORD: ${USER_DB_PASSWORD}
-      POSTGRES_DB: ${USER_DB_NAME}
+      POSTGRESQL_REPLICATION_MODE: master
+      POSTGRESQL_USERNAME: ${USER_DB_USER}
+      POSTGRESQL_PASSWORD: ${USER_DB_PASSWORD}
+      POSTGRESQL_DATABASE: ${USER_DB_NAME}
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
     volumes:
-      - postgres-users-data:/var/lib/postgresql/data
+      - postgres-users-data:/bitnami/postgresql
       - ./db/postgres/users.sql:/docker-entrypoint-initdb.d/001_users.sql:ro
     ports:
       - "5433:5432"
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${USER_DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-users-replica:
+    image: bitnami/postgresql:latest
+    container_name: postgres-users-replica
+    environment:
+      POSTGRESQL_REPLICATION_MODE: slave
+      POSTGRESQL_MASTER_HOST: postgres-users
+      POSTGRESQL_MASTER_PORT_NUMBER: 5432
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
+      POSTGRESQL_USERNAME: ${USER_DB_USER}
+      POSTGRESQL_PASSWORD: ${USER_DB_PASSWORD}
+      POSTGRESQL_DATABASE: ${USER_DB_NAME}
+    depends_on:
+      postgres-users:
+        condition: service_healthy
+    volumes:
+      - postgres-users-replica-data:/bitnami/postgresql
+    ports:
+      - "5439:5432"
     networks:
       - app-net
     healthcheck:
@@ -83,7 +113,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5170
       # ✅ Use container name 'postgres-users', not environment variable
-      - ConnectionStrings__DefaultConnection=Host=postgres-users;Port=5432;Database=${USER_DB_NAME};Username=${USER_DB_USER};Password=${USER_DB_PASSWORD}
+      - ConnectionStrings__DefaultConnection=Host=postgres-users,postgres-users-replica;Port=5432;Database=${USER_DB_NAME};Username=${USER_DB_USER};Password=${USER_DB_PASSWORD}
       - eureka__client__serviceUrl__defaultZone=http://discovery:8761/eureka/
       - spring__application__name=usermanagement
       - EUREKA_URL=http://discovery:8761/eureka/
@@ -108,23 +138,56 @@ services:
 
   #   --- GHOST AI (.NET) ---
   postgres-ghostai:
-    image: postgres:15-alpine
+    image: bitnami/postgresql:latest
     container_name: postgres-ghostai
     environment:
-      POSTGRES_USER: ${GHOSTAI_POSTGRES_USER}
-      POSTGRES_PASSWORD: ${GHOSTAI_POSTGRES_PASSWORD}
-      POSTGRES_DB: ${GHOSTAI_POSTGRES_DB}
+      POSTGRESQL_REPLICATION_MODE: master
+      POSTGRESQL_USERNAME: ${GHOSTAI_POSTGRES_USER}
+      POSTGRESQL_PASSWORD: ${GHOSTAI_POSTGRES_PASSWORD}
+      POSTGRESQL_DATABASE: ${GHOSTAI_POSTGRES_DB}
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
     volumes:
-      - postgres-ghostai-data:/var/lib/postgresql/data
+      - postgres-ghostai-data:/bitnami/postgresql
       - ./db/postgres/ghostai.sql:/docker-entrypoint-initdb.d/001_ghostai.sql:ro
     networks:
       - app-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${GHOSTAI_POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-ghostai-replica:
+    image: bitnami/postgresql:latest
+    container_name: postgres-ghostai-replica
+    environment:
+      POSTGRESQL_REPLICATION_MODE: slave
+      POSTGRESQL_MASTER_HOST: postgres-ghostai
+      POSTGRESQL_MASTER_PORT_NUMBER: 5432
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
+      POSTGRESQL_USERNAME: ${GHOSTAI_POSTGRES_USER}
+      POSTGRESQL_PASSWORD: ${GHOSTAI_POSTGRES_PASSWORD}
+      POSTGRESQL_DATABASE: ${GHOSTAI_POSTGRES_DB}
+    depends_on:
+      postgres-ghostai:
+        condition: service_healthy
+    volumes:
+      - postgres-ghostai-replica-data:/bitnami/postgresql
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${GHOSTAI_POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   ghostai-service:
     image: arinyan/ghostai-service:v3.5.6
     env_file: .env
     environment:
-      - ConnectionStrings__DefaultConnection=Host=postgres-ghostai;Port=5432;Database=${GHOSTAI_POSTGRES_DB};Username=${GHOSTAI_POSTGRES_USER};Password=${GHOSTAI_POSTGRES_PASSWORD}
+      - ConnectionStrings__DefaultConnection=Host=postgres-ghostai,postgres-ghostai-replica;Port=5432;Database=${GHOSTAI_POSTGRES_DB};Username=${GHOSTAI_POSTGRES_USER};Password=${GHOSTAI_POSTGRES_PASSWORD}
       - ASPNETCORE_URLS=http://+:8080
       - eureka__client__serviceUrl__defaultZone=http://discovery:8761/eureka/
       - spring__application__name=ghostai
@@ -145,17 +208,45 @@ services:
 
   # --- SHOP (FastAPI) ---
   shop_db:
-    image: postgres:15-alpine
+    image: bitnami/postgresql:latest
     container_name: shop_db
     environment:
-      POSTGRES_USER: ${SHOP_POSTGRES_USER}
-      POSTGRES_PASSWORD: ${SHOP_POSTGRES_PASSWORD}
-      POSTGRES_DB: ${SHOP_POSTGRES_DB}
+      POSTGRESQL_REPLICATION_MODE: master
+      POSTGRESQL_USERNAME: ${SHOP_POSTGRES_USER}
+      POSTGRESQL_PASSWORD: ${SHOP_POSTGRES_PASSWORD}
+      POSTGRESQL_DATABASE: ${SHOP_POSTGRES_DB}
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
     volumes:
-      - shop-data:/var/lib/postgresql/data
+      - shop-data:/bitnami/postgresql
       - ./db/postgres/shop.sql:/docker-entrypoint-initdb.d/init.sql:ro
     ports:
       - "5437:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${SHOP_POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-net
+
+  shop_db_replica:
+    image: bitnami/postgresql:latest
+    container_name: shop_db_replica
+    environment:
+      POSTGRESQL_REPLICATION_MODE: slave
+      POSTGRESQL_MASTER_HOST: shop_db
+      POSTGRESQL_MASTER_PORT_NUMBER: 5432
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
+      POSTGRESQL_USERNAME: ${SHOP_POSTGRES_USER}
+      POSTGRESQL_PASSWORD: ${SHOP_POSTGRES_PASSWORD}
+      POSTGRESQL_DATABASE: ${SHOP_POSTGRES_DB}
+    depends_on:
+      shop_db:
+        condition: service_healthy
+    volumes:
+      - shop-data-replica:/bitnami/postgresql
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${SHOP_POSTGRES_USER}" ]
       interval: 10s
@@ -170,7 +261,7 @@ services:
     env_file: .env
     environment:
       # - DATABASE_URL=postgresql://${SHOP_POSTGRES_USER}:${SHOP_POSTGRES_PASSWORD}@postgres-shop:5432/${SHOP_POSTGRES_DB}
-      - DATABASE_URL=postgresql://${SHOP_POSTGRES_USER}:${SHOP_POSTGRES_PASSWORD}@shop_db:5432/${SHOP_POSTGRES_DB}
+      - DATABASE_URL=postgresql://${SHOP_POSTGRES_USER}:${SHOP_POSTGRES_PASSWORD}@shop_db,shop_db_replica:5432/${SHOP_POSTGRES_DB}
       - EUREKA_URL=http://discovery:8761/eureka/
       - APP_NAME=web-shop
       - PORT=8000
@@ -195,15 +286,43 @@ services:
 
   # --- JOURNAL (FastAPI) ---
   journal_db:
-    image: postgres:15-alpine
+    image: bitnami/postgresql:latest
     container_name: journal_db
     environment:
-      POSTGRES_USER: ${JOURNAL_POSTGRES_USER}
-      POSTGRES_PASSWORD: ${JOURNAL_POSTGRES_PASSWORD}
-      POSTGRES_DB: ${JOURNAL_POSTGRES_DB}
+      POSTGRESQL_REPLICATION_MODE: master
+      POSTGRESQL_USERNAME: ${JOURNAL_POSTGRES_USER}
+      POSTGRESQL_PASSWORD: ${JOURNAL_POSTGRES_PASSWORD}
+      POSTGRESQL_DATABASE: ${JOURNAL_POSTGRES_DB}
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
     volumes:
-      - journal-data:/var/lib/postgresql/data
+      - journal-data:/bitnami/postgresql
       - ./db/postgres/journal.sql:/docker-entrypoint-initdb.d/journal.sql:ro
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${JOURNAL_POSTGRES_USER} -d ${JOURNAL_POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  journal_db_replica:
+    image: bitnami/postgresql:latest
+    container_name: journal_db_replica
+    environment:
+      POSTGRESQL_REPLICATION_MODE: slave
+      POSTGRESQL_MASTER_HOST: journal_db
+      POSTGRESQL_MASTER_PORT_NUMBER: 5432
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
+      POSTGRESQL_USERNAME: ${JOURNAL_POSTGRES_USER}
+      POSTGRESQL_PASSWORD: ${JOURNAL_POSTGRES_PASSWORD}
+      POSTGRESQL_DATABASE: ${JOURNAL_POSTGRES_DB}
+    depends_on:
+      journal_db:
+        condition: service_healthy
+    volumes:
+      - journal-data-replica:/bitnami/postgresql
     networks:
       - app-net
     healthcheck:
@@ -217,7 +336,7 @@ services:
     #container_name: journal-service
     env_file: .env
     environment:
-      - DATABASE_URL=postgresql://${JOURNAL_POSTGRES_USER}:${JOURNAL_POSTGRES_PASSWORD}@journal_db:5432/${JOURNAL_POSTGRES_DB}
+      - DATABASE_URL=postgresql://${JOURNAL_POSTGRES_USER}:${JOURNAL_POSTGRES_PASSWORD}@journal_db,journal_db_replica:5432/${JOURNAL_POSTGRES_DB}
       - EUREKA_URL=http://discovery:8761/eureka/
       - APP_NAME=web-journal
       - PORT=8000
@@ -242,24 +361,51 @@ services:
 
     # --- LOBBY (.NET) ---
   lobby_postgres:
-    image: postgres:16-alpine
+    image: bitnami/postgresql:latest
     container_name: lobby_postgres
     environment:
-      POSTGRES_DB: ${LOBBY_DB_NAME}
-      POSTGRES_USER: ${LOBBY_DB_USER}
-      POSTGRES_PASSWORD: ${LOBBY_DB_PASSWORD}
-      POSTGRES_LOG_STATEMENT: all
+      POSTGRESQL_REPLICATION_MODE: master
+      POSTGRESQL_USERNAME: ${LOBBY_DB_USER}
+      POSTGRESQL_PASSWORD: ${LOBBY_DB_PASSWORD}
+      POSTGRESQL_DATABASE: ${LOBBY_DB_NAME}
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
     ports:
       - "5438:5432"
     volumes:
       - ./db/postgres/lobby.sql:/docker-entrypoint-initdb.d/001_lobby.sql:ro
-      - lobby-postgres-data:/var/lib/postgresql/data
+      - lobby-postgres-data:/bitnami/postgresql
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${LOBBY_DB_USER} -d ${LOBBY_DB_NAME}" ]
       interval: 10s
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    networks:
+      - app-net
+
+  lobby_postgres_replica:
+    image: bitnami/postgresql:latest
+    container_name: lobby_postgres_replica
+    environment:
+      POSTGRESQL_REPLICATION_MODE: slave
+      POSTGRESQL_MASTER_HOST: lobby_postgres
+      POSTGRESQL_MASTER_PORT_NUMBER: 5432
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
+      POSTGRESQL_USERNAME: ${LOBBY_DB_USER}
+      POSTGRESQL_PASSWORD: ${LOBBY_DB_PASSWORD}
+      POSTGRESQL_DATABASE: ${LOBBY_DB_NAME}
+    depends_on:
+      lobby_postgres:
+        condition: service_healthy
+    volumes:
+      - lobby-postgres-replica-data:/bitnami/postgresql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${LOBBY_DB_USER} -d ${LOBBY_DB_NAME}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - app-net
 
@@ -271,8 +417,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=lobby_postgres;Port=5432;Database=${LOBBY_DB_NAME};Username=${LOBBY_DB_USER};Password=${LOBBY_DB_PASSWORD}
-      - DATABASE_URL=postgresql://${LOBBY_DB_USER}:${LOBBY_DB_PASSWORD}@lobby-postgres:5432/${LOBBY_DB_NAME}
+      - ConnectionStrings__DefaultConnection=Host=lobby_postgres,lobby_postgres_replica;Port=5432;Database=${LOBBY_DB_NAME};Username=${LOBBY_DB_USER};Password=${LOBBY_DB_PASSWORD}
+      - DATABASE_URL=postgresql://${LOBBY_DB_USER}:${LOBBY_DB_PASSWORD}@lobby_postgres,lobby_postgres_replica:5432/${LOBBY_DB_NAME}
       - POSTGRES_DB=${LOBBY_DB_NAME}
       - eureka__client__serviceUrl__defaultZone=http://discovery:8761/eureka/
       - spring__application__name=lobby-service
@@ -295,17 +441,45 @@ services:
 
   # --- MAP SERVICE (.NET) ---
   map_postgres:
-    image: postgres:15-alpine
+    image: bitnami/postgresql:latest
     container_name: map_postgres
     environment:
-      POSTGRES_USER: ${MAP_DB_USER}
-      POSTGRES_PASSWORD: ${MAP_DB_PASSWORD}
-      POSTGRES_DB: ${MAP_DB_NAME}
+      POSTGRESQL_REPLICATION_MODE: master
+      POSTGRESQL_USERNAME: ${MAP_DB_USER}
+      POSTGRESQL_PASSWORD: ${MAP_DB_PASSWORD}
+      POSTGRESQL_DATABASE: ${MAP_DB_NAME}
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
     volumes:
-      - map_pgdata:/var/lib/postgresql/data
+      - map_pgdata:/bitnami/postgresql
       - ./db/postgres/map.sql:/docker-entrypoint-initdb.d/001_map.sql:ro
     ports:
       - "5434:5432"
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${MAP_DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  map_postgres_replica:
+    image: bitnami/postgresql:latest
+    container_name: map_postgres_replica
+    environment:
+      POSTGRESQL_REPLICATION_MODE: slave
+      POSTGRESQL_MASTER_HOST: map_postgres
+      POSTGRESQL_MASTER_PORT_NUMBER: 5432
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
+      POSTGRESQL_USERNAME: ${MAP_DB_USER}
+      POSTGRESQL_PASSWORD: ${MAP_DB_PASSWORD}
+      POSTGRESQL_DATABASE: ${MAP_DB_NAME}
+    depends_on:
+      map_postgres:
+        condition: service_healthy
+    volumes:
+      - map_pgdata_replica:/bitnami/postgresql
     networks:
       - app-net
     healthcheck:
@@ -322,7 +496,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=map_postgres;Port=5432;Database=${MAP_DB_NAME};Username=${MAP_DB_USER};Password=${MAP_DB_PASSWORD}
+      - ConnectionStrings__DefaultConnection=Host=map_postgres,map_postgres_replica;Port=5432;Database=${MAP_DB_NAME};Username=${MAP_DB_USER};Password=${MAP_DB_PASSWORD}
       - eureka__client__serviceUrl__defaultZone=http://discovery:8761/eureka/
       - spring__application__name=map-service
       - EUREKA_URL=http://discovery:8761/eureka/
@@ -344,15 +518,43 @@ services:
 
   #--- GHOST (Node) ---
   ghost_postgres:
-    image: postgres:15-alpine
+    image: bitnami/postgresql:latest
     container_name: ghost_db
     environment:
-      POSTGRES_USER: ${GHOST_POSTGRES_USER}
-      POSTGRES_PASSWORD: ${GHOST_POSTGRES_PASSWORD}
-      POSTGRES_DB: ${GHOST_POSTGRES_DB}
+      POSTGRESQL_REPLICATION_MODE: master
+      POSTGRESQL_USERNAME: ${GHOST_POSTGRES_USER}
+      POSTGRESQL_PASSWORD: ${GHOST_POSTGRES_PASSWORD}
+      POSTGRESQL_DATABASE: ${GHOST_POSTGRES_DB}
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
     volumes:
-      - ghost-data:/var/lib/postgresql/data
+      - ghost-data:/bitnami/postgresql
       - ./db/postgres/ghosts.sql:/docker-entrypoint-initdb.d/ghosts.sql:ro
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${GHOST_POSTGRES_USER} -d ${GHOST_POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ghost_postgres_replica:
+    image: bitnami/postgresql:latest
+    container_name: ghost_db_replica
+    environment:
+      POSTGRESQL_REPLICATION_MODE: slave
+      POSTGRESQL_MASTER_HOST: ghost_postgres
+      POSTGRESQL_MASTER_PORT_NUMBER: 5432
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
+      POSTGRESQL_USERNAME: ${GHOST_POSTGRES_USER}
+      POSTGRESQL_PASSWORD: ${GHOST_POSTGRES_PASSWORD}
+      POSTGRESQL_DATABASE: ${GHOST_POSTGRES_DB}
+    depends_on:
+      ghost_postgres:
+        condition: service_healthy
+    volumes:
+      - ghost-data-replica:/bitnami/postgresql
     networks:
       - app-net
     healthcheck:
@@ -368,7 +570,7 @@ services:
 #      dockerfile: Dockerfile
     env_file: .env
     environment:
-      - DB_CONNECTION_STRING=Host=ghost_postgres;Port=5432;Database=${GHOST_POSTGRES_DB};Username=${GHOST_POSTGRES_USER};Password=${GHOST_POSTGRES_PASSWORD}
+      - DB_CONNECTION_STRING=Host=ghost_postgres,ghost_postgres_replica;Port=5432;Database=${GHOST_POSTGRES_DB};Username=${GHOST_POSTGRES_USER};Password=${GHOST_POSTGRES_PASSWORD}
       - ASPNETCORE_URLS=http://+:4001
 #      - POSTGRES_HOST=ghost_postgres
 #      - POSTGRES_PORT=5432
@@ -413,6 +615,23 @@ services:
       timeout: 5s
       retries: 5
 
+  location_redis_replica:
+    image: redis:7-alpine
+    container_name: location_redis_replica
+    command: [
+      "redis-server",
+      "--replicaof", "location_redis", "6379",
+      "--masterauth", "${LOCATION_REDIS_PASSWORD}",
+      "--requirepass", "${LOCATION_REDIS_PASSWORD}"
+    ]
+    networks:
+      - app-net
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "${LOCATION_REDIS_PASSWORD}", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   location-service:
     image: katrincik123/location-service:1.9
 #    build:
@@ -448,25 +667,47 @@ services:
 
   # --- CHAT  ---
   chat_db:
-    image: mysql:8.0
+    image: bitnami/mariadb:latest
     container_name: mysql_db_chat
     environment:
-      MYSQL_DATABASE: ${CHAT_MYSQL_DATABASE}
-      MYSQL_USER: ${CHAT_MYSQL_USER}
-      MYSQL_PASSWORD: ${CHAT_MYSQL_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${CHAT_MYSQL_ROOT_PASSWORD}
-    command: >
-      --default-authentication-plugin=mysql_native_password
-      --character-set-server=utf8mb4
-      --collation-server=utf8mb4_unicode_ci
+      MARIADB_REPLICATION_MODE: master
+      MARIADB_ROOT_PASSWORD: ${CHAT_MYSQL_ROOT_PASSWORD}
+      MARIADB_REPLICATION_USER: repl_user
+      MARIADB_REPLICATION_PASSWORD: repl_password
+      MARIADB_USER: ${CHAT_MYSQL_USER}
+      MARIADB_PASSWORD: ${CHAT_MYSQL_PASSWORD}
+      MARIADB_DATABASE: ${CHAT_MYSQL_DATABASE}
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${CHAT_MYSQL_ROOT_PASSWORD}" ]
       interval: 5s
       timeout: 5s
       retries: 20
     volumes:
-      - mysql_chat_data:/var/lib/mysql
+      - mysql_chat_data:/bitnami/mariadb
       - ./db/mysql/chat.sql:/docker-entrypoint-initdb.d/001_chat.sql:ro
+    networks:
+      - app-net
+
+  chat_db_replica:
+    image: bitnami/mariadb:latest
+    container_name: mysql_db_chat_replica
+    environment:
+      MARIADB_REPLICATION_MODE: slave
+      MARIADB_REPLICATION_USER: repl_user
+      MARIADB_REPLICATION_PASSWORD: repl_password
+      MARIADB_MASTER_HOST: mysql_db_chat
+      MARIADB_MASTER_PORT_NUMBER: 3306
+      MARIADB_MASTER_ROOT_PASSWORD: ${CHAT_MYSQL_ROOT_PASSWORD}
+    depends_on:
+      chat_db:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${CHAT_MYSQL_ROOT_PASSWORD}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - mysql_chat_data_replica:/bitnami/mariadb
     networks:
       - app-net
 
@@ -492,25 +733,49 @@ services:
 
   # --- INVENTORY (FastAPI) ---
   inventory-db:
-    image: mysql:8.0
+    image: bitnami/mariadb:latest
     container_name: mysql_db
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-    command: >
-      --default-authentication-plugin=mysql_native_password
-      --character-set-server=utf8mb4
-      --collation-server=utf8mb4_unicode_ci
+      MARIADB_REPLICATION_MODE: master
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MARIADB_REPLICATION_USER: repl_user
+      MARIADB_REPLICATION_PASSWORD: repl_password
+      MARIADB_USER: ${MYSQL_USER}
+      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
+      MARIADB_DATABASE: ${MYSQL_DATABASE}
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-mysql}" ]
       interval: 5s
       timeout: 5s
       retries: 20
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql_data:/bitnami/mariadb
       - ./db/mysql/inventory.sql:/docker-entrypoint-initdb.d/001_inventory.sql:ro
+    networks:
+      - app-net
+    restart: unless-stopped
+
+  inventory-db-replica:
+    image: bitnami/mariadb:latest
+    container_name: mysql_db_replica
+    environment:
+      MARIADB_REPLICATION_MODE: slave
+      MARIADB_REPLICATION_USER: repl_user
+      MARIADB_REPLICATION_PASSWORD: repl_password
+      MARIADB_MASTER_HOST: mysql_db
+      MARIADB_MASTER_PORT_NUMBER: 3306
+      MARIADB_MASTER_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    depends_on:
+      inventory-db:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-mysql}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - mysql_data_replica:/bitnami/mariadb
     networks:
       - app-net
     restart: unless-stopped
@@ -606,3 +871,12 @@ volumes:
   lobby-postgres-data:
   mysql_chat_data:
   map_pgdata:
+  map_pgdata_replica:
+  postgres-ghostai-replica-data:
+  postgres-users-replica-data:
+  shop-data-replica:
+  journal-data-replica:
+  lobby-postgres-replica-data:
+  ghost-data-replica:
+  mysql_data_replica:
+  mysql_chat_data_replica:
