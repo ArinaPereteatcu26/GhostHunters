@@ -546,7 +546,7 @@ services:
     build:
       context: ./GhostHunters_GatewayService/gateway
       dockerfile: Dockerfile
-#    image: dgliga/gateway-service:v1.4.0
+#    image: dgliga/gateway-service:v1.4.1
     # container_name: api-gateway
     env_file: .env
     environment:
