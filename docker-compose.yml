@@ -7,10 +7,10 @@ services:
 
   messagebroker:
     container_name: message-broker
-    image: katrincik123/message-broker:v1.1.3
-#    build:
-#      context: ./MessageBroker
-#      dockerfile: Dockerfile
+#    image: katrincik123/message-broker:v1.1.3
+    build:
+      context: ./MessageBroker
+      dockerfile: Dockerfile
     depends_on:
       - discovery
     ports:
@@ -21,6 +21,12 @@ services:
 #      timeout: 5s
 #      retries: 20
 #      start_period: 40s
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8082/actuator/health || exit 1" ]
+      interval: 10s         # how often to check
+      timeout: 5s           # request timeout
+      start_period: 60s     # give broker time to start + talk to Eureka
+      retries: 10           # be patient before calling it unhealthy
     networks:
       - app-net
     restart: unless-stopped
@@ -70,7 +76,7 @@ services:
       retries: 5
 
   usermanagement-service:
-    image: arinyan/usermanagement-service:v3.5.4
+    image: arinyan/usermanagement-service:v3.6.6
     #container_name: usermanagement-service
     env_file: .env
     environment:
@@ -88,8 +94,10 @@ services:
     depends_on:
       postgres-users:
         condition: service_healthy  # ✅ Changed to wait for healthy
+      messagebroker:
+        condition: service_healthy
     deploy:
-      replicas: 2
+      replicas: 1
     #ports:
     #   - "5170:5170"
     expose:
