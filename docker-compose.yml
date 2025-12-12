@@ -7,7 +7,7 @@ services:
 
   messagebroker:
     container_name: message-broker
-#    image: katrincik123/message-broker:v1.1.3
+#    image: katrincik123/message-broker:v1.1.4
     build:
       context: ./MessageBroker
       dockerfile: Dockerfile
@@ -76,7 +76,7 @@ services:
       retries: 5
 
   usermanagement-service:
-    image: arinyan/usermanagement-service:v3.6.6
+    image: arinyan/usermanagement-service:v3.7.7
     #container_name: usermanagement-service
     env_file: .env
     environment:
@@ -546,7 +546,7 @@ services:
     build:
       context: ./GhostHunters_GatewayService/gateway
       dockerfile: Dockerfile
-#    image: dgliga/gateway-service:v1.3.11
+#    image: dgliga/gateway-service:v1.4.0
     # container_name: api-gateway
     env_file: .env
     environment:
@@ -555,8 +555,9 @@ services:
       # ✅ Enable Gateway <-> Eureka integration (if the gateway has the client on classpath)
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery:8761/eureka/
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
-      - SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_ENABLED=true
-      - SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_LOWERCASESERVICEID=true
+      # Disable auto-discovery routing; gateway only exposes user-facing routes
+      - SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_ENABLED=false
+      - SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_LOWERCASESERVICEID=false
       - USER_SERVICE_URL=http://usermanagement-service:5170
       - GHOSTAI_SERVICE_URL=http://ghostai-service:8080
       - JOURNAL_SERVICE_URL=http://web-journal:8000
