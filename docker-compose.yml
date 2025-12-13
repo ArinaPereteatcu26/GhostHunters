@@ -7,7 +7,7 @@ services:
 
   messagebroker:
     container_name: message-broker
-#    image: katrincik123/message-broker:v1.1.4
+#    image: katrincik123/message-broker:v1.1.5
     build:
       context: ./MessageBroker
       dockerfile: Dockerfile
