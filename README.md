@@ -5,7 +5,7 @@
 This project implements a **Phasmophobia-inspired multiplayer horror game backend** using a **distributed microservices architecture**.  
 The system is designed to scale horizontally and support **millions of concurrent users**, with strict service boundaries, database-per-service isolation, and multiple communication patterns (REST, events, WebSockets).
 
-## 🧱 Architecture Principles
+## Architecture Principles
 
 - Microservices-first design
 - Database per Service
@@ -14,7 +14,11 @@ The system is designed to scale horizontally and support **millions of concurren
 - Eventual consistency where acceptable
 - Centralized API Gateway
 - Technology chosen per service responsibility
-
+Gateway only exposes user GETs at `http://localhost:8080/users/...`; non-GETs are routed to the Message Broker.
+- Gateway cache is sharded via **consistent hashing** (`GATEWAY_CACHE_SHARDS`, default 4). Responses carry `X-Gateway-Cache` and `X-Gateway-Shard`.
+- All private services run with **database replication** (Bitnami Postgres/MariaDB master/slave). 
+- **Message Broker** handles pub/sub and hosts a **Saga coordinator** for long-running transactions.
+- **Data Warehouse + ETL**: `warehouse-db` (Postgres) + `dw-etl` (Python) snapshot all service DBs every `DW_ETL_INTERVAL_SECONDS` (default 60s) into `dw.raw_events`.
   
 ## Running Services
 
@@ -76,6 +80,64 @@ The API Gateway consolidates all service endpoints through a unified entry point
 
 - **Centralized logging & monitoring**  
   Collects logs and metrics in one place for easier debugging and observability.
+
+- Public: user GETs only (`/users/...`).
+- Cache: consistent hash sharded; headers `X-Gateway-Cache: hit|miss`, `X-Gateway-Shard: shard-N`; TTL 30s, max body 1MB.
+- Non-GET traffic: forwarded to Message Broker.
+
+## Message Broker (REST)
+- Publish event: `POST /v1/publish` → `{ "routingKey": "...", "payload": { ... } }`
+- Subscriber registry: `POST /v1/register` → `{ "service": "...", "endpoint": "...", "topics": ["..."] }`
+- Service registry (for direct calls/sagas):
+  - `POST /v1/services/register` → `{ "service": "ghost-service", "url": "http://ghost-service:4001" }`
+  - `GET /v1/services` → list registered instances
+  - `GET /v1/resolve/{service}` → one healthy instance
+- Saga coordinator:
+  - `POST /v1/saga/start`
+    ```json
+    {
+      "steps": [
+        {
+          "service": "ghost-service",
+          "path": "/health",
+          "method": "GET",
+          "body": {},
+          "compensation": {
+            "service": "ghost-service",
+            "path": "/health/cancel",
+            "method": "POST",
+            "body": {}
+          }
+        }
+      ]
+    }
+    ```
+  - `GET /v1/saga/{id}` → saga state (`RUNNING|SUCCEEDED|FAILED|COMPENSATED`, log, timestamps).
+
+## Data Warehouse & ETL
+- Services: `warehouse-db` (Postgres) + `dw-etl` (Python).
+- Interval: `DW_ETL_INTERVAL_SECONDS` (default 60s).
+- Target: `dw.raw_events` stores JSON payloads per service/table.
+- Inspect counts:
+  ```bash
+  docker exec warehouse-db psql -U warehouse_user -d warehouse_db \
+    -c "SELECT service, source_table, count(*) FROM dw.raw_events GROUP BY 1,2 ORDER BY 1,2;"
+  ```
+- Tail ETL logs:
+  ```bash
+  docker logs --tail=50 -f ghosthunters-dw-etl-1
+  ```
+
+## Replication / Failover
+- Bitnami Postgres master/slave for all Postgres services (`*_replica` containers) with healthchecks.
+- Bitnami MariaDB master/slave for chat and inventory.
+- Redis primary + replica for Location.
+- Services use multi-host connection strings (e.g., `Host=primary,replica;Port=5432;...`) to allow failover.
+
+## Caching (Consistent Hash Sharding)
+- Code: `GhostHunters_GatewayService/gateway/src/main/java/com/acm/gateway/cache/*`
+- Config: `GATEWAY_CACHE_SHARDS` (default 4), TTL 30s, max body 1MB.
+- Behavior: consistent-hash ring with virtual nodes balances keys across shards; headers expose shard/hit status.
 
 
 ## Route Pattern
