@@ -2,8 +2,20 @@
 
 ## Overview
 
-This document describes the service boundaries for a Phasmophobia clone game backend, designed to handle up to 4 million concurrent users through a microservices architecture.
+This project implements a **Phasmophobia-inspired multiplayer horror game backend** using a **distributed microservices architecture**.  
+The system is designed to scale horizontally and support **millions of concurrent users**, with strict service boundaries, database-per-service isolation, and multiple communication patterns (REST, events, WebSockets).
 
+## 🧱 Architecture Principles
+
+- Microservices-first design
+- Database per Service
+- Event-driven & real-time communication
+- Horizontal scalability
+- Eventual consistency where acceptable
+- Centralized API Gateway
+- Technology chosen per service responsibility
+
+  
 ## Running Services
 
 ### Requirements
@@ -38,50 +50,70 @@ This document describes the service boundaries for a Phasmophobia clone game bac
 docker-compose up -d --build
 ```
 
-### Accessing Services
-
-- User Management Service: http://localhost:5169
-- Ghost AI Service: http://localhost:8083 http://localhost:8084
-- Shop Service: http://localhost:8002
-- Journal Service: http://localhost:8003
-- Lobby: http://localhost:5144
-- Map: http://localhost:5035
-- Ghost Service: http://localhost:4001
-- Location Service: http://localhost:4002
-- Inventory Service: http://localhost:8000
-- Chat Service: http://localhost:8001
-
 ### API Gateway
 
 The API Gateway consolidates all service endpoints through a unified entry point at `http://localhost:8080`.
 
+## Gateway Responsibilities
+
+- **Unified entry point**  
+  Acts as the single access point for all client requests to backend services.
+
+- **Service discovery**  
+  Dynamically discovers available services via the service registry.
+
+- **Load balancing**  
+  Distributes incoming requests across multiple service instances to improve availability and performance.
+
+- **Authentication & authorization**  
+  Validates client identity and enforces access control before forwarding requests.
+
+- **Rate limiting**  
+  Protects backend services by limiting the number of requests per client.
+
+- **Circuit breaking**  
+  Prevents cascading failures by stopping requests to unhealthy services.
+
+- **Centralized logging & monitoring**  
+  Collects logs and metrics in one place for easier debugging and observability.
+
+
+## Route Pattern
+http://localhost:8080/{service-name}/{endpoint}
+
 #### Public Gateway Endpoints
 
-External-facing routes accessible by client applications:
+## Direct Service Ports (Debug Only)
 
-| Endpoint | Target Service | Description |
-|----------|----------------|-------------|
-| `http://localhost:8080/users/api/users` | User Management | User management operations |
-| `http://localhost:8080/ghostai/ghoststates` | Ghost AI | Ghost state information |
-| `http://localhost:8080/journal/journal/1/entries` | Journal | Journal entries access |
-| `http://localhost:8080/ghost/ghosts` | Ghost Service | Ghost encyclopedia |
-| `http://localhost:8080/shop/shop/items` | Shop | Shop item catalog |
-| `http://localhost:8080/inventory/inventory` | Inventory | Inventory management |
-| `http://localhost:8080/chat/messages` | Chat | Chat messaging |
+| Service          | Port        |
+|------------------|-------------|
+| User Management  | 5169        |
+| Ghost AI         | 8083 / 8084 |
+| Shop             | 8002        |
+| Journal          | 8003        |
+| Lobby            | 5144        |
+| Map              | 5035        |
+| Ghost            | 4001        |
+| Location         | 4002        |
+| Inventory        | 8000        |
+| Chat             | 8001        |
 
 #### Service-to-Service Routes
 
-Internal communication routes between microservices:
+## Services Overview
 
-| Route | Source → Target | Purpose |
-|-------|-----------------|---------|
-| `http://localhost:8080/inventory/1/profile` | Inventory → User Management | Fetch user profile for inventory operations |
-| `http://localhost:8080/lobby/users/2` | Lobby → User Management | Get user data for lobby sessions |
-| `http://localhost:8080/journal/ghosts/1` | Journal → Ghost Service | Validate ghost types for scoring |
-| `http://localhost:8080/shop/users/2/currency` | Shop → User Management | Check user currency for purchases |
-| `http://localhost:8080/lobby/inventory/1` | Lobby → Inventory | Sync item states with active sessions |
-| `http://localhost:8080/lobby/journal/init/1` | Lobby → Journal | Initialize investigation records |
-| `http://localhost:8080/ghostai/chat/mute/1` | Ghost AI → Chat | Apply haunting communication restrictions |
+| Service         | Language    | Responsibility                  |
+|-----------------|-------------|---------------------------------|
+| User Management | C# (.NET 8) | Users, auth, currency, friends  |
+| Ghost AI        | C# (.NET 8) | Ghost behavior & decision logic |
+| Lobby           | C# (.NET 8) | Active game sessions            |
+| Location        | C# (.NET 8) | Real-time player tracking       |
+| Inventory       | Python      | Item ownership & durability     |
+| Shop            | Node.js     | Purchases & pricing             |
+| Journal         | Python      | Evidence & scoring              |
+| Chat            | Node.js     | Proximity-based communication   |
+| Map             | Node.js     | Maps, rooms, objects            |
+| Ghost           | Node.js     | Ghost encyclopedia              |
 
 **Note:** Service-to-service routes are not exposed to external clients and are used exclusively for internal microservice communication.
 
@@ -144,6 +176,28 @@ In addition to fundamental profile management, it monitors in-game currency bala
 **Data Owned:** User profiles, authentication tokens, friend relationships, currency balances
 
 **Independence:** Fully self-contained with its own database and business logic
+
+### Authentication
+
+#### POST `/users/register`
+**Request**
+```json
+{
+  "username": "string",
+  "email": "string",
+  "password": "string"
+}
+```
+Currency Management
+GET /users/{id}/balance
+
+Response
+```json
+{
+  "userId": "uuid",
+  "currency": "int"
+}
+```
 
 ---
 
@@ -2281,7 +2335,92 @@ Stores and provides detailed information about ghost types, symptoms, and behavi
   "message": "Ghost deleted successfully"
 }
 ```
+## 📡 Message Broker Events
 
+### Event Envelope
+```json
+{
+  "eventId": "uuid",
+  "eventType": "string",
+  "timestamp": "timestamp",
+  "source": "user-service",
+  "version": "1.0",
+  "data": {}
+}
+```
+UserRegistered
+```json
+{
+  "eventType": "UserRegistered",
+  "data": {
+    "userId": "uuid",
+    "username": "string",
+    "email": "string",
+    "level": 1,
+    "initialCurrency": 100
+  }
+}
+```
+CurrencyIncreased
+```json
+{
+  "eventType": "CurrencyIncreased",
+  "data": {
+    "userId": "uuid",
+    "amount": 50,
+    "previousBalance": 100,
+    "newBalance": 150,
+    "reason": "game_reward"
+  }
+}
+```
+
+## Architecture 
+```mermaid
+flowchart LR
+    subgraph Gateway["API Gateway (Spring)"]
+    end
+
+    subgraph Broker["Message Broker (Spring @8082)"]
+        B1["/v1/register<br/>/v1/publish<br/>/v1/topics<br/>/v1/dlq<br/>/v1/resolve/{service}<br/>/v1/call/{service}"]
+        B2["/v1/services/register<br/>/v1/services"]
+        B3["/v1/saga/start<br/>/v1/saga/{id}"]
+    end
+
+    subgraph Chat["Chat Service (FastAPI, MySQL)"]
+        C1["REST: /health, /messages, /mute/{lobby_id}"]
+        C2["WS: /ws"]
+        C3["Broker consumer: /consume<br/>topics: chat.mute, lobby.session.started|ended, lobby.deleted, service.chat<br/>publishes: chat.message.created"]
+    end
+
+    subgraph Inventory["Inventory Service (FastAPI, MySQL)"]
+        I1["REST: /health<br/>/inventory CRUD<br/>/inventory/consume<br/>/inventory/repair"]
+        I2["Broker consumer: /consume<br/>topics: user.created|updated|deleted, service.inventory-service (add_item, consume_item)<br/>publishes: inventory.item.created|consumed|repaired"]
+    end
+
+    subgraph UserMgmt["User Management (ASP.NET, Postgres)"]
+        U1["REST: /api/users*, /api/friends*, /api/users/{id}/currency"]
+        U2["Broker consumer: /consume (user.balance.updated, user.profile.requested, user.details.requested, service queue)"]
+    end
+
+    subgraph GhostAI["Ghost AI (ASP.NET, Postgres/Redis)"]
+        G1["REST: /GhostAI/start, /GhostStates, /GhostStates/{lobbyId}"]
+    end
+
+    Gateway -->|/chat/*| Chat
+    Gateway -->|/inventory/*| Inventory
+    Gateway -->|/users/*| UserMgmt
+    Gateway -->|/ghostai/*| GhostAI
+    Gateway -->|"other routes (shop, journal, ghost, location, lobby, map)"| Broker
+
+    Chat -->|register/consume| Broker
+    Inventory -->|register/consume| Broker
+    UserMgmt -->|consume/publish| Broker
+
+    Broker -->|events| Chat
+    Broker -->|events| Inventory
+    Broker -->|events| UserMgmt
+```
 ## GitHub Workflow Setup  
 
 Our repository follows a structured GitHub workflow to ensure quality and collaboration.  
