@@ -31,6 +31,56 @@ services:
       - app-net
     restart: unless-stopped
 
+  warehouse-db:
+    image: postgres:16
+    container_name: warehouse-db
+    environment:
+      POSTGRES_DB: ${WAREHOUSE_DB:-warehouse_db}
+      POSTGRES_USER: ${WAREHOUSE_USER:-warehouse_user}
+      POSTGRES_PASSWORD: ${WAREHOUSE_PASSWORD:-warehouse_password}
+    volumes:
+      - warehouse-data:/var/lib/postgresql/data
+    networks:
+      - app-net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${WAREHOUSE_USER:-warehouse_user}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  dw-etl:
+    build:
+      context: ./data-warehouse-etl
+      dockerfile: Dockerfile
+    depends_on:
+      warehouse-db:
+        condition: service_healthy
+      postgres-users:
+        condition: service_healthy
+      postgres-ghostai:
+        condition: service_healthy
+      shop_db:
+        condition: service_healthy
+      journal_db:
+        condition: service_healthy
+      lobby_postgres:
+        condition: service_healthy
+      map_postgres:
+        condition: service_healthy
+      ghost_postgres:
+        condition: service_healthy
+      inventory-db:
+        condition: service_healthy
+      chat_db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      - WAREHOUSE_URL=${WAREHOUSE_URL:-postgresql://warehouse_user:warehouse_password@warehouse-db:5432/warehouse_db}
+      - DW_ETL_INTERVAL_SECONDS=${DW_ETL_INTERVAL_SECONDS:-900}
+    networks:
+      - app-net
+    restart: unless-stopped
+
   discovery:
     image: dgliga/discovery-service:v1.2.1
 #    build:
@@ -880,3 +930,4 @@ volumes:
   ghost-data-replica:
   mysql_data_replica:
   mysql_chat_data_replica:
+  warehouse-data:
